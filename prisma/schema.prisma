@@ -1,0 +1,181 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  admin
+  staff
+  operator
+}
+
+enum MovementType {
+  in
+  out
+  adjust
+}
+
+enum InvoiceStatus {
+  draft
+  sent
+  paid
+  overdue
+  cancelled
+}
+
+enum SmsKind {
+  broadcast
+  reminder
+  custom
+}
+
+enum SmsStatus {
+  queued
+  sent
+  failed
+  simulated
+}
+
+model User {
+  id           String          @id @default(cuid())
+  name         String
+  email        String          @unique
+  passwordHash String
+  role         Role            @default(staff)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  movements    StockMovement[]
+  invoices     Invoice[]
+  smsMessages  SmsMessage[]
+}
+
+model Category {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  products  Product[]
+}
+
+model Product {
+  id           String          @id @default(cuid())
+  sku          String          @unique
+  name         String
+  description  String          @default("")
+  quantity     Int             @default(0)
+  reorderLevel Int             @default(10)
+  unitPrice    Float           @default(0)
+  costPrice    Float           @default(0)
+  categoryId   String?
+  category     Category?       @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  active       Boolean         @default(true)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  movements    StockMovement[]
+  invoiceItems InvoiceItem[]
+
+  @@index([name])
+  @@index([quantity])
+}
+
+model StockMovement {
+  id          String       @id @default(cuid())
+  productId   String
+  product     Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  type        MovementType
+  quantity    Int
+  note        String       @default("")
+  takenById   String?
+  takenBy     FloorStaff?  @relation(fields: [takenById], references: [id], onDelete: SetNull)
+  createdById String?
+  createdBy   User?        @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime     @default(now())
+
+  @@index([createdAt])
+  @@index([productId])
+  @@index([takenById])
+}
+
+model FloorStaff {
+  id        String          @id @default(cuid())
+  name      String          @unique
+  active    Boolean         @default(true)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  movements StockMovement[]
+}
+
+model Client {
+  id        String       @id @default(cuid())
+  name      String
+  email     String?
+  phone     String?
+  notes     String       @default("")
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  invoices  Invoice[]
+  messages  SmsMessage[]
+
+  @@index([name])
+  @@index([phone])
+}
+
+model Invoice {
+  id            String         @id @default(cuid())
+  number        String         @unique
+  clientId      String
+  client        Client         @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  status        InvoiceStatus  @default(draft)
+  taxRate       Float          @default(0)
+  subtotal      Float          @default(0)
+  taxAmount     Float          @default(0)
+  total         Float          @default(0)
+  notes         String         @default("")
+  dueDate       DateTime?
+  stockDeducted Boolean        @default(false)
+  createdById   String?
+  createdBy     User?          @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  items         InvoiceItem[]
+  messages      SmsMessage[]
+
+  @@index([status])
+  @@index([dueDate])
+}
+
+model InvoiceItem {
+  id          String   @id @default(cuid())
+  invoiceId   String
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  productId   String?
+  product     Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  description String
+  quantity    Int
+  unitPrice   Float
+  lineTotal   Float
+}
+
+model SmsMessage {
+  id          String    @id @default(cuid())
+  clientId    String?
+  client      Client?   @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  invoiceId   String?
+  invoice     Invoice?  @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+  kind        SmsKind
+  toPhone     String
+  body        String
+  status      SmsStatus @default(queued)
+  providerId  String?
+  error       String?
+  createdById String?
+  createdBy   User?     @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime  @default(now())
+
+  @@index([createdAt])
+  @@index([kind])
+}
