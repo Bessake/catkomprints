@@ -6,7 +6,7 @@ import { FloorStaffForm } from "@/components/floor-staff-form";
 import { prisma } from "@/lib/prisma";
 
 export const metadata = {
-  title: "Staff names",
+  title: "Staff members",
 };
 
 export default async function StaffPage() {
@@ -20,7 +20,7 @@ export default async function StaffPage() {
       <div className="page-header">
         <div>
           <p className="eyebrow">Floor</p>
-          <h1>Staff names</h1>
+          <h1>Staff members</h1>
           <p className="muted" style={{ margin: "0.4rem 0 0" }}>
             Names available on the stock out terminal so each take-out is
             attributed to the right person.

@@ -45,6 +45,24 @@ export default auth((req) => {
     if (pathname === "/reports" || pathname.startsWith("/reports/")) {
       return NextResponse.redirect(new URL("/daily-report", req.nextUrl.origin));
     }
+    if (pathname === "/products" || pathname.startsWith("/products/")) {
+      return NextResponse.redirect(new URL("/stock-out", req.nextUrl.origin));
+    }
+    if (pathname === "/invoices" || pathname.startsWith("/invoices/")) {
+      return NextResponse.redirect(new URL("/services", req.nextUrl.origin));
+    }
+    if (pathname === "/movements" || pathname.startsWith("/movements/")) {
+      return NextResponse.redirect(new URL("/stock-out", req.nextUrl.origin));
+    }
+    if (pathname === "/staff" || pathname.startsWith("/staff/")) {
+      return NextResponse.redirect(new URL("/services", req.nextUrl.origin));
+    }
+    if (pathname === "/users" || pathname.startsWith("/users/")) {
+      return NextResponse.redirect(new URL("/services", req.nextUrl.origin));
+    }
+    if (pathname === "/categories" || pathname.startsWith("/categories/")) {
+      return NextResponse.redirect(new URL("/stock-out", req.nextUrl.origin));
+    }
   }
 
   return NextResponse.next();

@@ -5,25 +5,20 @@ import { BrandLogo } from "@/components/brand-logo";
 const adminLinks = [
   { href: "/", label: "Dashboard" },
   { href: "/reports", label: "Daily reports" },
-  { href: "/services", label: "Services" },
-  { href: "/stock-out", label: "Stock" },
-  { href: "/cash-out", label: "Cash out" },
   { href: "/products", label: "Products" },
   { href: "/invoices", label: "Invoices" },
-  { href: "/clients", label: "Clients" },
-  { href: "/messages", label: "Messages" },
   { href: "/movements", label: "Movements" },
-  { href: "/staff", label: "Staff names" },
+  { href: "/staff", label: "Staff members" },
   { href: "/users", label: "Front desk logins" },
   { href: "/categories", label: "Categories" },
-  { href: "/operator", label: "Floor terminal" },
 ];
 
 const staffLinks = [
   { href: "/services", label: "Services" },
   { href: "/stock-out", label: "Stock" },
-  { href: "/products", label: "Products" },
   { href: "/cash-out", label: "Cash out" },
+  { href: "/clients", label: "Clients" },
+  { href: "/messages", label: "Messages" },
   { href: "/daily-report", label: "Daily report" },
 ];
 

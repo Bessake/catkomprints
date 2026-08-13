@@ -63,9 +63,6 @@ export default async function DashboardPage() {
           <Link href="/reports" className="button secondary">
             Daily reports
           </Link>
-          <Link href="/services" className="button secondary">
-            Record service
-          </Link>
           <Link href="/invoices/new" className="button secondary">
             New invoice
           </Link>
@@ -112,7 +109,7 @@ export default async function DashboardPage() {
 
       <p className="muted" style={{ marginTop: "-0.5rem", marginBottom: "1.25rem" }}>
         Inventory cost value: {formatCurrency(inventoryValue)}.{" "}
-        <Link href="/messages">Send payment reminders →</Link>
+        <Link href="/products">View products →</Link>
       </p>
 
       <div className="detail-layout">
