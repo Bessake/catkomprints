@@ -51,11 +51,6 @@ export function DeskProductForm({
         </label>
       </div>
 
-      <label>
-        SKU (optional)
-        <input name="sku" placeholder="Leave blank to generate" />
-      </label>
-
       <div className="actions">
         <button type="submit" className="button" disabled={pending}>
           {pending ? "Adding…" : "Add product"}

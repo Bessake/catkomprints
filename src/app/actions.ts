@@ -111,7 +111,6 @@ export async function createProductAction(
 
 const deskProductSchema = z.object({
   name: z.string().trim().min(1).max(120),
-  sku: z.string().trim().max(64).optional().default(""),
   categoryId: z.string().optional(),
   initialQuantity: z.coerce.number().int().min(0).optional().default(0),
 });
@@ -134,7 +133,6 @@ export async function createDeskProductAction(
 
   const parsed = deskProductSchema.safeParse({
     name: formData.get("name"),
-    sku: formData.get("sku") || "",
     categoryId: formData.get("categoryId") || undefined,
     initialQuantity: formData.get("initialQuantity") || 0,
   });
@@ -143,9 +141,7 @@ export async function createDeskProductAction(
     return { error: "Enter a product name and a quantity of 0 or more." };
   }
 
-  const sku = parsed.data.sku
-    ? parsed.data.sku.toUpperCase()
-    : skuFromName(parsed.data.name);
+  const sku = skuFromName(parsed.data.name);
   const categoryId =
     parsed.data.categoryId && parsed.data.categoryId !== ""
       ? parsed.data.categoryId
@@ -186,7 +182,7 @@ export async function createDeskProductAction(
       "code" in error &&
       error.code === "P2002"
     ) {
-      return { error: "A product with that SKU already exists. Try another SKU." };
+      return { error: "Could not add that product. Try again." };
     }
     throw error;
   }
