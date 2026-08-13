@@ -717,6 +717,80 @@ input[readonly] {
   }
 }
 
+.sales-chart-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+.sales-chart-head strong {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  letter-spacing: -0.03em;
+  margin-top: 0.15rem;
+}
+
+.sales-chart-delta {
+  font-weight: 700;
+  white-space: nowrap;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(27, 122, 74, 0.12);
+  color: var(--ok);
+}
+
+.sales-chart-delta.down {
+  background: var(--warn-bg);
+  color: var(--warn);
+}
+
+.sales-chart-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.sales-chart-grid {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+.sales-chart-axis {
+  fill: var(--ink-soft);
+  font-size: 11px;
+}
+
+.sales-chart-area {
+  fill: rgba(30, 79, 214, 0.12);
+}
+
+.sales-chart-line {
+  fill: none;
+  stroke: var(--brand-blue);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.sales-chart-dot {
+  fill: var(--bg-panel);
+  stroke: var(--brand-blue);
+  stroke-width: 2.5;
+}
+
+.sales-chart-dot.active {
+  fill: var(--brand-orange);
+  stroke: var(--brand-orange);
+}
+
+.sales-chart-hit {
+  fill: transparent;
+  cursor: pointer;
+}
+
 @media (max-width: 900px) {
   .app-shell,
   .stat-grid,
@@ -730,5 +804,9 @@ input[readonly] {
     position: sticky;
     top: 0;
     z-index: 5;
+  }
+
+  .sales-chart-head {
+    flex-direction: column;
   }
 }

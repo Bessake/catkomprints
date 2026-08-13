@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { InvoiceStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { getAccraDayBounds } from "@/lib/day-report";
+import { SalesTrendChart } from "@/components/sales-trend-chart";
+import { buildDailySalesSeries, getAccraDayBounds } from "@/lib/day-report";
 import {
   formatCurrency,
   formatDate,
@@ -15,33 +16,41 @@ export const metadata = {
 
 export default async function DashboardPage() {
   const { reportDate } = getAccraDayBounds();
-  const [productCount, lowStock, recentMovements, products, unpaidCount, todayReport] =
-    await Promise.all([
-      prisma.product.count({ where: { active: true } }),
-      prisma.product.findMany({
-        where: { active: true },
-        orderBy: { quantity: "asc" },
-      }),
-      prisma.stockMovement.findMany({
-        take: 8,
-        orderBy: { createdAt: "desc" },
-        include: {
-          product: true,
-          createdBy: true,
-        },
-      }),
-      prisma.product.findMany({
-        where: { active: true },
-        select: { quantity: true, unitPrice: true, costPrice: true },
-      }),
-      prisma.invoice.count({
-        where: { status: { in: [InvoiceStatus.sent, InvoiceStatus.overdue] } },
-      }),
-      prisma.dailyReport.findUnique({
-        where: { reportDate },
-        include: { submittedBy: true },
-      }),
-    ]);
+  const [
+    productCount,
+    lowStock,
+    recentMovements,
+    products,
+    unpaidCount,
+    todayReport,
+    salesSeries,
+  ] = await Promise.all([
+    prisma.product.count({ where: { active: true } }),
+    prisma.product.findMany({
+      where: { active: true },
+      orderBy: { quantity: "asc" },
+    }),
+    prisma.stockMovement.findMany({
+      take: 8,
+      orderBy: { createdAt: "desc" },
+      include: {
+        product: true,
+        createdBy: true,
+      },
+    }),
+    prisma.product.findMany({
+      where: { active: true },
+      select: { quantity: true, unitPrice: true, costPrice: true },
+    }),
+    prisma.invoice.count({
+      where: { status: { in: [InvoiceStatus.sent, InvoiceStatus.overdue] } },
+    }),
+    prisma.dailyReport.findUnique({
+      where: { reportDate },
+      include: { submittedBy: true },
+    }),
+    buildDailySalesSeries(14),
+  ]);
 
   const lowStockItems = lowStock.filter((p) =>
     isLowStock(p.quantity, p.reorderLevel),
@@ -111,6 +120,14 @@ export default async function DashboardPage() {
         Inventory cost value: {formatCurrency(inventoryValue)}.{" "}
         <Link href="/products">View products →</Link>
       </p>
+
+      <section className="panel" style={{ marginBottom: "1.25rem" }}>
+        <h2>Daily sales</h2>
+        <p className="muted" style={{ marginTop: "-0.35rem" }}>
+          Front desk jobs for the last 14 days. Hover a day to see the total.
+        </p>
+        <SalesTrendChart points={salesSeries} />
+      </section>
 
       <div className="detail-layout">
         <section className="panel">

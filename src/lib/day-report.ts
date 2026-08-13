@@ -145,6 +145,68 @@ export function netCashOnHand(
   return snapshot.serviceCashTotal - snapshot.cashOutCashTotal;
 }
 
+export type DailySalesPoint = {
+  label: string;
+  display: string;
+  total: number;
+  momo: number;
+  cash: number;
+  jobs: number;
+};
+
+export async function buildDailySalesSeries(
+  days = 14,
+): Promise<DailySalesPoint[]> {
+  const dayCount = Math.max(2, Math.min(days, 60));
+  const { start: todayStart, label: todayLabel } = getAccraDayBounds();
+  const rangeStart = new Date(todayStart);
+  rangeStart.setUTCDate(rangeStart.getUTCDate() - (dayCount - 1));
+  const rangeEnd = new Date(`${todayLabel}T23:59:59.999Z`);
+
+  const sales = await prisma.serviceSale.findMany({
+    where: { servedAt: { gte: rangeStart, lte: rangeEnd } },
+    select: { cost: true, paymentMethod: true, servedAt: true },
+  });
+
+  const byDay = new Map<
+    string,
+    { total: number; momo: number; cash: number; jobs: number }
+  >();
+  for (let i = 0; i < dayCount; i += 1) {
+    const day = new Date(rangeStart);
+    day.setUTCDate(rangeStart.getUTCDate() + i);
+    byDay.set(day.toISOString().slice(0, 10), {
+      total: 0,
+      momo: 0,
+      cash: 0,
+      jobs: 0,
+    });
+  }
+
+  for (const sale of sales) {
+    const key = sale.servedAt.toISOString().slice(0, 10);
+    const bucket = byDay.get(key);
+    if (!bucket) continue;
+    bucket.total += sale.cost;
+    bucket.jobs += 1;
+    if (sale.paymentMethod === PaymentMethod.momo) {
+      bucket.momo += sale.cost;
+    } else {
+      bucket.cash += sale.cost;
+    }
+  }
+
+  return [...byDay.entries()].map(([label, values]) => ({
+    label,
+    display: new Intl.DateTimeFormat("en-GB", {
+      day: "numeric",
+      month: "short",
+      timeZone: "Africa/Accra",
+    }).format(new Date(`${label}T12:00:00.000Z`)),
+    ...values,
+  }));
+}
+
 function mapStockRow(row: {
   createdAt: Date;
   quantity: number;
