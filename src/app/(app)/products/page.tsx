@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { deleteProductAction } from "@/app/actions";
 import { ensureDefaultPrintMaterials } from "@/lib/ensure-print-materials";
 import { prisma } from "@/lib/prisma";
 import { formatCurrency, isLowStock } from "@/lib/utils";
@@ -91,11 +92,13 @@ export default async function ProductsPage({
                   <th>Qty</th>
                   <th>Unit price (GH₵)</th>
                   <th>Status</th>
+                  <th />
                 </tr>
               </thead>
               <tbody>
                 {visible.map((product) => {
                   const low = isLowStock(product.quantity, product.reorderLevel);
+                  const remove = deleteProductAction.bind(null, product.id);
                   return (
                     <tr key={product.id}>
                       <td>
@@ -127,6 +130,13 @@ export default async function ProductsPage({
                         ) : (
                           <span className="badge inactive">Inactive</span>
                         )}
+                      </td>
+                      <td>
+                        <form action={remove}>
+                          <button type="submit" className="button danger">
+                            Delete
+                          </button>
+                        </form>
                       </td>
                     </tr>
                   );

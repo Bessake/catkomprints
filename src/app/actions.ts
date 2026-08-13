@@ -172,6 +172,7 @@ export async function deleteProductAction(productId: string) {
   revalidatePath("/");
   revalidatePath("/products");
   revalidatePath("/movements");
+  revalidatePath("/operator");
   redirect("/products");
 }
 
