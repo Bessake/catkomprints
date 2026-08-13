@@ -5,6 +5,7 @@ import { BrandLogo } from "@/components/brand-logo";
 const links: { href: string; label: string; adminOnly?: boolean }[] = [
   { href: "/", label: "Dashboard" },
   { href: "/services", label: "Services" },
+  { href: "/cash-out", label: "Cash out" },
   { href: "/products", label: "Products" },
   { href: "/invoices", label: "Invoices" },
   { href: "/clients", label: "Clients" },

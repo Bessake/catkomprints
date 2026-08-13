@@ -57,6 +57,7 @@ model User {
   invoices     Invoice[]
   smsMessages  SmsMessage[]
   serviceSales ServiceSale[]
+  cashOuts     CashOut[]
 }
 
 model Category {
@@ -213,4 +214,18 @@ model ServiceSale {
   @@index([servedAt])
   @@index([paymentMethod])
   @@index([serviceId])
+}
+
+model CashOut {
+  id            String         @id @default(cuid())
+  amount        Float
+  paymentMethod PaymentMethod
+  purpose       String
+  takenAt       DateTime
+  createdById   String?
+  createdBy     User?          @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt     DateTime       @default(now())
+
+  @@index([takenAt])
+  @@index([paymentMethod])
 }

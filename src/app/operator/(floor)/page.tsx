@@ -1,8 +1,5 @@
 import { OperatorStockOutForm } from "@/components/operator-stock-out-form";
-import {
-  ensureDefaultFloorStaff,
-  ensureDefaultPrintMaterials,
-} from "@/lib/ensure-print-materials";
+import { ensureDefaultFloorStaff } from "@/lib/ensure-print-materials";
 import { prisma } from "@/lib/prisma";
 
 export const metadata = {
@@ -10,7 +7,6 @@ export const metadata = {
 };
 
 export default async function OperatorHomePage() {
-  await ensureDefaultPrintMaterials();
   await ensureDefaultFloorStaff();
   const [products, staff] = await Promise.all([
     prisma.product.findMany({
@@ -31,15 +27,18 @@ export default async function OperatorHomePage() {
           <p className="eyebrow">Stock out terminal</p>
           <h1>Record stock out</h1>
           <p className="muted" style={{ margin: "0.4rem 0 0" }}>
-            Select who is taking materials, then record the stock out. It
-            updates admin inventory automatically.
+            Only active products from the admin Products page appear here.
+            Select who is taking materials, then record the stock out.
           </p>
         </div>
       </div>
 
       <section className="panel operator-panel">
         {products.length === 0 ? (
-          <p className="muted">No active products available.</p>
+          <p className="muted">
+            No active products yet. Add products in the admin Products page,
+            then return here to record stock out.
+          </p>
         ) : (
           <OperatorStockOutForm
             products={products.map((product) => ({
