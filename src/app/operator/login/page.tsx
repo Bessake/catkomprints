@@ -25,9 +25,6 @@ export default function OperatorLoginPage() {
           <Suspense fallback={<p>Loading…</p>}>
             <OperatorLoginForm />
           </Suspense>
-          <p className="muted" style={{ marginTop: "1rem", fontSize: "0.9rem" }}>
-            Demo: operator@catkomprints.local / password123
-          </p>
           <p style={{ marginTop: "1rem", textAlign: "center" }}>
             <Link href="/login">Admin / office login →</Link>
           </p>

@@ -21,9 +21,6 @@ export default function LoginPage() {
           <Suspense fallback={<p>Loading…</p>}>
             <LoginForm />
           </Suspense>
-          <p className="muted" style={{ marginTop: "1rem", fontSize: "0.9rem" }}>
-            Demo: admin@catkomprints.local / password123
-          </p>
           <p style={{ marginTop: "1rem", textAlign: "center" }}>
             <Link href="/operator/login">Stock out terminal login →</Link>
           </p>

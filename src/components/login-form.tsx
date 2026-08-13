@@ -19,8 +19,8 @@ export function LoginForm() {
         <input
           name="email"
           type="email"
+          autoComplete="email"
           required
-          defaultValue="admin@catkomprints.local"
         />
       </label>
       <label>
@@ -28,8 +28,8 @@ export function LoginForm() {
         <input
           name="password"
           type="password"
+          autoComplete="current-password"
           required
-          defaultValue="password123"
         />
       </label>
       {state?.error && <p className="error-text">{state.error}</p>}
