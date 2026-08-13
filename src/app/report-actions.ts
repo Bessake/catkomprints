@@ -3,8 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
-import { buildDaySnapshot } from "@/lib/day-report";
+import { buildDayActivity, buildDaySnapshot } from "@/lib/day-report";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 
 export type ReportActionState = { error?: string; success?: string } | null;
 
@@ -33,7 +34,10 @@ export async function sendDailyReportAction(
     return { error: "Notes are too long. Keep them under 2000 characters." };
   }
 
-  const snapshot = await buildDaySnapshot();
+  const [snapshot, activity] = await Promise.all([
+    buildDaySnapshot(),
+    buildDayActivity(),
+  ]);
   const data = {
     serviceCount: snapshot.serviceCount,
     serviceMomoCount: snapshot.serviceMomoCount,
@@ -49,6 +53,7 @@ export async function sendDailyReportAction(
     stockOutUnits: snapshot.stockOutUnits,
     stockInCount: snapshot.stockInCount,
     stockInUnits: snapshot.stockInUnits,
+    activity: activity as Prisma.InputJsonValue,
     notes: parsed.data.notes,
     submittedById: session.user.id,
     submittedAt: new Date(),

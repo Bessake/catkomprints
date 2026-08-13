@@ -2,9 +2,9 @@
 
 import { useActionState, useEffect, useMemo, useState } from "react";
 import {
-  operatorStockOutAction,
-  type OperatorActionState,
-} from "@/app/operator/actions";
+  recordDeskStockInAction,
+  type ActionState,
+} from "@/app/actions";
 import { isLowStock } from "@/lib/utils";
 
 type ProductOption = {
@@ -16,12 +16,7 @@ type ProductOption = {
   categoryName: string | null;
 };
 
-type StaffOption = {
-  id: string;
-  name: string;
-};
-
-const initialState: OperatorActionState = null;
+const initialState: ActionState = null;
 
 function formatLocalDateTime(date: Date) {
   return new Intl.DateTimeFormat("en-GB", {
@@ -35,13 +30,7 @@ function formatLocalDateTime(date: Date) {
   }).format(date);
 }
 
-export function OperatorStockOutForm({
-  products,
-  staff,
-}: {
-  products: ProductOption[];
-  staff: StaffOption[];
-}) {
+export function DeskStockInForm({ products }: { products: ProductOption[] }) {
   const sorted = useMemo(() => {
     return [...products].sort((a, b) => {
       const cat = (a.categoryName || "").localeCompare(b.categoryName || "");
@@ -51,11 +40,10 @@ export function OperatorStockOutForm({
   }, [products]);
 
   const [state, formAction, pending] = useActionState(
-    operatorStockOutAction,
+    recordDeskStockInAction,
     initialState,
   );
   const [productId, setProductId] = useState(sorted[0]?.id || "");
-  const [takenById, setTakenById] = useState(staff[0]?.id || "");
   const [now, setNow] = useState(() => new Date());
 
   useEffect(() => {
@@ -73,51 +61,21 @@ export function OperatorStockOutForm({
   const dateValue = now.toISOString().slice(0, 10);
   const timeValue = now.toTimeString().slice(0, 8);
 
-  if (staff.length === 0) {
-    return (
-      <p className="muted">
-        No staff names are set up yet. Ask an admin to add staff under Staff
-        names, then return here to record stock out.
-      </p>
-    );
-  }
-
   return (
-    <form action={formAction} className="form-grid operator-form">
+    <form action={formAction} className="form-grid">
       {state?.error && <p className="error-text">{state.error}</p>}
       {state?.success && <div className="success-banner">{state.success}</div>}
 
       <label>
-        Staff name
-        <select
-          name="takenById"
-          required
-          value={takenById}
-          onChange={(event) => setTakenById(event.target.value)}
-          className="operator-material-select"
-        >
-          <option value="" disabled>
-            Who is taking the stock?
-          </option>
-          {staff.map((member) => (
-            <option key={member.id} value={member.id}>
-              {member.name}
-            </option>
-          ))}
-        </select>
-      </label>
-
-      <label>
-        Material type
+        Product
         <select
           name="productId"
           required
           value={productId}
           onChange={(event) => setProductId(event.target.value)}
-          className="operator-material-select"
         >
           <option value="" disabled>
-            Select material
+            Select product
           </option>
           {sorted.map((product) => {
             const label = product.categoryName
@@ -133,46 +91,36 @@ export function OperatorStockOutForm({
       </label>
 
       {selected ? (
-        <div className="operator-selected-stats">
-          <div
-            className={`stat-card${
-              isLowStock(selected.quantity, selected.reorderLevel) ? " warn" : ""
-            }`}
-          >
-            <span className="muted">On hand</span>
-            <strong>{selected.quantity}</strong>
-          </div>
+        <div
+          className={`stat-card${
+            isLowStock(selected.quantity, selected.reorderLevel) ? " warn" : ""
+          }`}
+        >
+          <span className="muted">On hand</span>
+          <strong>{selected.quantity}</strong>
         </div>
       ) : null}
 
       <div className="form-grid two">
         <label>
-          Quantity
-          <input
-            name="quantity"
-            type="number"
-            min={1}
-            max={selected?.quantity || undefined}
-            required
-            defaultValue={1}
-            className="operator-qty"
-          />
+          Quantity in
+          <input name="quantity" type="number" min={1} required defaultValue={1} />
         </label>
         <label>
-          Job / note
-          <input name="note" placeholder="Optional job # or client" />
+          Note
+          <input name="note" placeholder="Optional supplier or job" />
         </label>
       </div>
 
       <div className="form-grid two">
         <label>
           Date
-          <input name="stockOutDate" type="date" value={dateValue} readOnly />
+          <input name="stockInDate" type="date" value={dateValue} readOnly />
         </label>
         <label>
           Time
           <input
-            name="stockOutTime"
+            name="stockInTime"
             type="time"
             step={1}
             value={timeValue}
@@ -181,22 +129,16 @@ export function OperatorStockOutForm({
         </label>
       </div>
 
-      <p className="muted operator-datetime-hint">
+      <p className="muted">
         Date and time are filled automatically: {formatLocalDateTime(now)}
       </p>
 
       <button
         type="submit"
-        className="button operator-submit"
-        disabled={
-          pending ||
-          !productId ||
-          !takenById ||
-          !selected ||
-          selected.quantity <= 0
-        }
+        className="button"
+        disabled={pending || !productId}
       >
-        {pending ? "Recording…" : "Record stock out"}
+        {pending ? "Recording…" : "Record stock in"}
       </button>
     </form>
   );

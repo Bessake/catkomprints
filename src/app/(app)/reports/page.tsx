@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { netCashOnHand, netMomoOnHand } from "@/lib/day-report";
 import { formatCurrency, formatDate, formatDateShort } from "@/lib/utils";
 
 export const metadata = { title: "Daily reports" };
@@ -36,9 +37,9 @@ export default async function ReportsInboxPage() {
               <thead>
                 <tr>
                   <th>Date</th>
-                  <th>MoMo in</th>
-                  <th>Cash in</th>
-                  <th>Money out</th>
+                  <th>MoMo on hand</th>
+                  <th>Cash on hand</th>
+                  <th>Take-outs</th>
                   <th>Stock out</th>
                   <th>Stock in</th>
                   <th>Sent by</th>
@@ -55,8 +56,22 @@ export default async function ReportsInboxPage() {
                         {formatDate(report.submittedAt)}
                       </div>
                     </td>
-                    <td>{formatCurrency(report.serviceMomoTotal)}</td>
-                    <td>{formatCurrency(report.serviceCashTotal)}</td>
+                    <td>
+                      {formatCurrency(netMomoOnHand(report))}
+                      {report.cashOutMomoTotal > 0 ? (
+                        <div className="muted" style={{ fontSize: "0.85rem" }}>
+                          − {formatCurrency(report.cashOutMomoTotal)} out
+                        </div>
+                      ) : null}
+                    </td>
+                    <td>
+                      {formatCurrency(netCashOnHand(report))}
+                      {report.cashOutCashTotal > 0 ? (
+                        <div className="muted" style={{ fontSize: "0.85rem" }}>
+                          − {formatCurrency(report.cashOutCashTotal)} out
+                        </div>
+                      ) : null}
+                    </td>
                     <td>
                       {formatCurrency(
                         report.cashOutMomoTotal + report.cashOutCashTotal,

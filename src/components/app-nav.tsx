@@ -6,6 +6,7 @@ const adminLinks = [
   { href: "/", label: "Dashboard" },
   { href: "/reports", label: "Daily reports" },
   { href: "/services", label: "Services" },
+  { href: "/stock-out", label: "Stock" },
   { href: "/cash-out", label: "Cash out" },
   { href: "/products", label: "Products" },
   { href: "/invoices", label: "Invoices" },
@@ -15,11 +16,13 @@ const adminLinks = [
   { href: "/staff", label: "Staff names" },
   { href: "/users", label: "Front desk logins" },
   { href: "/categories", label: "Categories" },
-  { href: "/operator", label: "Stock out" },
+  { href: "/operator", label: "Floor terminal" },
 ];
 
 const staffLinks = [
   { href: "/services", label: "Services" },
+  { href: "/stock-out", label: "Stock" },
+  { href: "/products", label: "Products" },
   { href: "/cash-out", label: "Cash out" },
   { href: "/daily-report", label: "Daily report" },
 ];

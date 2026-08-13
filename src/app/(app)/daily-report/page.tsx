@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation";
 import { DailyReportForm } from "@/components/daily-report-form";
+import { DayActivityLists } from "@/components/day-activity-lists";
 import { DaySnapshotCards } from "@/components/day-snapshot-cards";
 import { auth } from "@/lib/auth";
-import { buildDaySnapshot } from "@/lib/day-report";
+import { buildDayActivity, buildDaySnapshot } from "@/lib/day-report";
 import { prisma } from "@/lib/prisma";
 import { formatDate } from "@/lib/utils";
 
@@ -12,7 +13,10 @@ export default async function DailyReportPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  const snapshot = await buildDaySnapshot();
+  const [snapshot, activity] = await Promise.all([
+    buildDaySnapshot(),
+    buildDayActivity(),
+  ]);
   const existing = await prisma.dailyReport.findUnique({
     where: { reportDate: snapshot.reportDate },
     include: { submittedBy: true },
@@ -25,8 +29,8 @@ export default async function DailyReportPage() {
           <p className="eyebrow">Front desk</p>
           <h1>Daily report</h1>
           <p className="muted" style={{ margin: "0.4rem 0 0" }}>
-            Review today’s cash, MoMo, stock in, stock out, and cash out, then
-            send it to the manager.
+            Review today’s jobs, materials taken out, cash/MoMo take-outs, and
+            stock in, then send it to the manager.
           </p>
         </div>
       </div>
@@ -43,6 +47,7 @@ export default async function DailyReportPage() {
       )}
 
       <DaySnapshotCards snapshot={snapshot} />
+      <DayActivityLists activity={activity} />
 
       <section className="panel" style={{ marginTop: "1.25rem" }}>
         <h2>{existing ? "Update and resend" : "Send to manager"}</h2>

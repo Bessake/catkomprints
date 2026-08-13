@@ -5,6 +5,7 @@ import {
 import { CashOutForm } from "@/components/cash-out-form";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getAccraDayBounds } from "@/lib/day-report";
 import {
   formatCurrency,
   formatDate,
@@ -26,10 +27,10 @@ export default async function CashOutPage({
       ? (payment as PaymentMethod)
       : undefined;
 
-  const startOfToday = new Date();
-  startOfToday.setHours(0, 0, 0, 0);
+  const { start, end } = getAccraDayBounds();
+  const todayRange = { gte: start, lte: end };
 
-  const [entries, todayEntries] = await Promise.all([
+  const [entries, todayEntries, todaySales] = await Promise.all([
     prisma.cashOut.findMany({
       where: paymentFilter ? { paymentMethod: paymentFilter } : undefined,
       include: { createdBy: true },
@@ -37,8 +38,12 @@ export default async function CashOutPage({
       take: 200,
     }),
     prisma.cashOut.findMany({
-      where: { takenAt: { gte: startOfToday } },
+      where: { takenAt: todayRange },
       select: { amount: true, paymentMethod: true },
+    }),
+    prisma.serviceSale.findMany({
+      where: { servedAt: todayRange },
+      select: { cost: true, paymentMethod: true },
     }),
   ]);
 
@@ -49,6 +54,12 @@ export default async function CashOutPage({
   const todayCash = todayEntries
     .filter((row) => row.paymentMethod === "cash")
     .reduce((sum, row) => sum + row.amount, 0);
+  const todayMomoIn = todaySales
+    .filter((row) => row.paymentMethod === "momo")
+    .reduce((sum, row) => sum + row.cost, 0);
+  const todayCashIn = todaySales
+    .filter((row) => row.paymentMethod === "cash")
+    .reduce((sum, row) => sum + row.cost, 0);
 
   return (
     <>
@@ -78,6 +89,23 @@ export default async function CashOutPage({
         <div className="stat-card">
           <span className="muted">Cash out today</span>
           <strong>{formatCurrency(todayCash)}</strong>
+        </div>
+      </div>
+
+      <div className="stat-grid">
+        <div className="stat-card">
+          <span className="muted">MoMo remaining</span>
+          <strong>{formatCurrency(todayMomoIn - todayMomo)}</strong>
+          <p className="muted" style={{ margin: "0.35rem 0 0" }}>
+            After take-outs
+          </p>
+        </div>
+        <div className="stat-card">
+          <span className="muted">Cash remaining</span>
+          <strong>{formatCurrency(todayCashIn - todayCash)}</strong>
+          <p className="muted" style={{ margin: "0.35rem 0 0" }}>
+            After take-outs
+          </p>
         </div>
       </div>
 

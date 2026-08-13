@@ -5,6 +5,7 @@ import { ServiceSaleForm } from "@/components/service-sale-form";
 import { auth } from "@/lib/auth";
 import { DEFAULT_PRESS_SERVICES } from "@/lib/press-services";
 import { prisma } from "@/lib/prisma";
+import { getAccraDayBounds } from "@/lib/day-report";
 import {
   formatCurrency,
   formatDate,
@@ -35,10 +36,10 @@ export default async function ServicesPage({
       ? (payment as PaymentMethod)
       : undefined;
 
-  const startOfToday = new Date();
-  startOfToday.setHours(0, 0, 0, 0);
+  const { start, end } = getAccraDayBounds();
+  const todayRange = { gte: start, lte: end };
 
-  const [catalog, sales, todaySales, allSales] = await Promise.all([
+  const [catalog, sales, todaySales, todayCashOuts, allSales] = await Promise.all([
     prisma.pressService.findMany({
       include: { _count: { select: { sales: true } } },
       orderBy: { name: "asc" },
@@ -50,8 +51,12 @@ export default async function ServicesPage({
       take: 100,
     }),
     prisma.serviceSale.findMany({
-      where: { servedAt: { gte: startOfToday } },
+      where: { servedAt: todayRange },
       select: { cost: true, paymentMethod: true },
+    }),
+    prisma.cashOut.findMany({
+      where: { takenAt: todayRange },
+      select: { amount: true, paymentMethod: true },
     }),
     prisma.serviceSale.findMany({
       include: { service: true, createdBy: true },
@@ -60,13 +65,21 @@ export default async function ServicesPage({
   ]);
 
   const activeServices = catalog.filter((service) => service.active);
-  const todayTotal = todaySales.reduce((sum, sale) => sum + sale.cost, 0);
-  const todayMomo = todaySales
+  const todayMomoIn = todaySales
     .filter((sale) => sale.paymentMethod === "momo")
     .reduce((sum, sale) => sum + sale.cost, 0);
-  const todayCash = todaySales
+  const todayCashIn = todaySales
     .filter((sale) => sale.paymentMethod === "cash")
     .reduce((sum, sale) => sum + sale.cost, 0);
+  const todayMomoOut = todayCashOuts
+    .filter((row) => row.paymentMethod === "momo")
+    .reduce((sum, row) => sum + row.amount, 0);
+  const todayCashOut = todayCashOuts
+    .filter((row) => row.paymentMethod === "cash")
+    .reduce((sum, row) => sum + row.amount, 0);
+  const todayMomo = todayMomoIn - todayMomoOut;
+  const todayCash = todayCashIn - todayCashOut;
+  const todayTotal = todayMomo + todayCash;
   const momoClients = allSales.filter((sale) => sale.paymentMethod === "momo");
   const cashClients = allSales.filter((sale) => sale.paymentMethod === "cash");
   const momoTotal = momoClients.reduce((sum, sale) => sum + sale.cost, 0);
@@ -93,14 +106,23 @@ export default async function ServicesPage({
         <div className="stat-card">
           <span className="muted">Today’s total</span>
           <strong>{formatCurrency(todayTotal)}</strong>
+          <p className="muted" style={{ margin: "0.35rem 0 0" }}>
+            After take-outs
+          </p>
         </div>
         <div className="stat-card">
           <span className="muted">MoMo today</span>
           <strong>{formatCurrency(todayMomo)}</strong>
+          <p className="muted" style={{ margin: "0.35rem 0 0" }}>
+            {formatCurrency(todayMomoIn)} in − {formatCurrency(todayMomoOut)} out
+          </p>
         </div>
         <div className="stat-card">
           <span className="muted">Cash today</span>
           <strong>{formatCurrency(todayCash)}</strong>
+          <p className="muted" style={{ margin: "0.35rem 0 0" }}>
+            {formatCurrency(todayCashIn)} in − {formatCurrency(todayCashOut)} out
+          </p>
         </div>
       </div>
 

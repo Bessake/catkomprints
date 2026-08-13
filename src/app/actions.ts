@@ -104,7 +104,170 @@ export async function createProductAction(
   revalidatePath("/");
   revalidatePath("/products");
   revalidatePath("/movements");
+  revalidatePath("/stock-out");
+  revalidatePath("/operator");
   redirect(`/products/${productId}`);
+}
+
+const deskProductSchema = z.object({
+  name: z.string().trim().min(1).max(120),
+  sku: z.string().trim().max(64).optional().default(""),
+  categoryId: z.string().optional(),
+  initialQuantity: z.coerce.number().int().min(0).optional().default(0),
+});
+
+function skuFromName(name: string) {
+  const slug = name
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 20);
+  const suffix = Date.now().toString(36).toUpperCase().slice(-6);
+  return `${slug || "ITEM"}-${suffix}`;
+}
+
+export async function createDeskProductAction(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const session = await requireSession();
+
+  const parsed = deskProductSchema.safeParse({
+    name: formData.get("name"),
+    sku: formData.get("sku") || "",
+    categoryId: formData.get("categoryId") || undefined,
+    initialQuantity: formData.get("initialQuantity") || 0,
+  });
+
+  if (!parsed.success) {
+    return { error: "Enter a product name and a quantity of 0 or more." };
+  }
+
+  const sku = parsed.data.sku
+    ? parsed.data.sku.toUpperCase()
+    : skuFromName(parsed.data.name);
+  const categoryId =
+    parsed.data.categoryId && parsed.data.categoryId !== ""
+      ? parsed.data.categoryId
+      : null;
+  const initialQty = parsed.data.initialQuantity;
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      const created = await tx.product.create({
+        data: {
+          sku,
+          name: parsed.data.name,
+          quantity: initialQty,
+          reorderLevel: 10,
+          unitPrice: 0,
+          costPrice: 0,
+          categoryId,
+          active: true,
+        },
+      });
+
+      if (initialQty > 0) {
+        await tx.stockMovement.create({
+          data: {
+            productId: created.id,
+            type: MovementType.in,
+            quantity: initialQty,
+            note: "Initial stock",
+            createdById: session.user.id,
+          },
+        });
+      }
+    });
+  } catch (error) {
+    if (
+      typeof error === "object" &&
+      error &&
+      "code" in error &&
+      error.code === "P2002"
+    ) {
+      return { error: "A product with that SKU already exists. Try another SKU." };
+    }
+    throw error;
+  }
+
+  revalidatePath("/");
+  revalidatePath("/products");
+  revalidatePath("/movements");
+  revalidatePath("/stock-out");
+  revalidatePath("/operator");
+  revalidatePath("/daily-report");
+  return {
+    success: `${parsed.data.name} is now in the product list.`,
+  };
+}
+
+const deskStockInSchema = z.object({
+  productId: z.string().min(1),
+  quantity: z.coerce.number().int().positive(),
+  note: z.string().trim().max(500).optional().default(""),
+  stockInDate: z.string().optional(),
+  stockInTime: z.string().optional(),
+});
+
+export async function recordDeskStockInAction(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const session = await requireSession();
+
+  const parsed = deskStockInSchema.safeParse({
+    productId: formData.get("productId"),
+    quantity: formData.get("quantity"),
+    note: formData.get("note") || "",
+    stockInDate: formData.get("stockInDate") || undefined,
+    stockInTime: formData.get("stockInTime") || undefined,
+  });
+
+  if (!parsed.success) {
+    return { error: "Select a product and a quantity of 1 or more." };
+  }
+
+  const product = await prisma.product.findUnique({
+    where: { id: parsed.data.productId },
+  });
+  if (!product || !product.active) {
+    return { error: "That product is not available. Pick another from the list." };
+  }
+
+  const stampedAt =
+    parsed.data.stockInDate && parsed.data.stockInTime
+      ? new Date(`${parsed.data.stockInDate}T${parsed.data.stockInTime}`)
+      : new Date();
+  const occurredAt = Number.isNaN(stampedAt.getTime()) ? new Date() : stampedAt;
+
+  await prisma.$transaction([
+    prisma.product.update({
+      where: { id: product.id },
+      data: { quantity: product.quantity + parsed.data.quantity },
+    }),
+    prisma.stockMovement.create({
+      data: {
+        productId: product.id,
+        type: MovementType.in,
+        quantity: parsed.data.quantity,
+        note: parsed.data.note || "Stock in recorded at front desk",
+        createdById: session.user.id,
+        createdAt: occurredAt,
+      },
+    }),
+  ]);
+
+  revalidatePath("/");
+  revalidatePath("/products");
+  revalidatePath(`/products/${product.id}`);
+  revalidatePath("/movements");
+  revalidatePath("/stock-out");
+  revalidatePath("/operator");
+  revalidatePath("/daily-report");
+  return {
+    success: `Recorded ${parsed.data.quantity} × ${product.name} into stock.`,
+  };
 }
 
 export async function updateProductAction(
@@ -163,6 +326,8 @@ export async function updateProductAction(
   revalidatePath("/");
   revalidatePath("/products");
   revalidatePath(`/products/${productId}`);
+  revalidatePath("/stock-out");
+  revalidatePath("/operator");
   return { success: "Product updated." };
 }
 
@@ -172,6 +337,7 @@ export async function deleteProductAction(productId: string) {
   revalidatePath("/");
   revalidatePath("/products");
   revalidatePath("/movements");
+  revalidatePath("/stock-out");
   revalidatePath("/operator");
   redirect("/products");
 }
@@ -249,6 +415,9 @@ export async function recordMovementAction(
   revalidatePath("/products");
   revalidatePath(`/products/${productId}`);
   revalidatePath("/movements");
+  revalidatePath("/stock-out");
+  revalidatePath("/operator");
+  revalidatePath("/daily-report");
   return { success: "Stock updated." };
 }
 
@@ -276,6 +445,7 @@ export async function createCategoryAction(
 
   revalidatePath("/categories");
   revalidatePath("/products");
+  revalidatePath("/stock-out");
   return { success: "Category added." };
 }
 
@@ -284,5 +454,6 @@ export async function deleteCategoryAction(categoryId: string) {
   await prisma.category.delete({ where: { id: categoryId } });
   revalidatePath("/categories");
   revalidatePath("/products");
+  revalidatePath("/stock-out");
   redirect("/categories");
 }

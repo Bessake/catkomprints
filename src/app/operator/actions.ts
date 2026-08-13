@@ -125,7 +125,9 @@ export async function operatorStockOutAction(
   revalidatePath("/movements");
   revalidatePath("/operator");
   revalidatePath("/operator/history");
+  revalidatePath("/stock-out");
   revalidatePath("/staff");
+  revalidatePath("/daily-report");
 
   return {
     success: `Recorded ${parsed.data.quantity} × ${product.name} taken by ${staffMember.name} at ${stampLabel}.`,

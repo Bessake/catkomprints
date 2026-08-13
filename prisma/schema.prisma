@@ -248,6 +248,7 @@ model DailyReport {
   stockOutUnits      Int      @default(0)
   stockInCount       Int      @default(0)
   stockInUnits       Int      @default(0)
+  activity           Json?
   notes              String   @default("")
   submittedById      String?
   submittedBy        User?    @relation(fields: [submittedById], references: [id], onDelete: SetNull)

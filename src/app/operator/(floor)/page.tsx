@@ -27,8 +27,9 @@ export default async function OperatorHomePage() {
           <p className="eyebrow">Stock out terminal</p>
           <h1>Record stock out</h1>
           <p className="muted" style={{ margin: "0.4rem 0 0" }}>
-            Only active products from the admin Products page appear here.
-            Select who is taking materials, then record the stock out.
+            Only active products from the Products page or front desk Stock out
+            page appear here. Select who is taking materials, then record the
+            stock out.
           </p>
         </div>
       </div>
@@ -36,8 +37,8 @@ export default async function OperatorHomePage() {
       <section className="panel operator-panel">
         {products.length === 0 ? (
           <p className="muted">
-            No active products yet. Add products in the admin Products page,
-            then return here to record stock out.
+            No active products yet. Add products on the front desk Stock out
+            page or in Products, then return here to record stock out.
           </p>
         ) : (
           <OperatorStockOutForm

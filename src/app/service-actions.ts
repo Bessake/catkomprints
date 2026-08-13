@@ -76,6 +76,8 @@ export async function recordServiceSaleAction(
   });
 
   revalidatePath("/services");
+  revalidatePath("/cash-out");
+  revalidatePath("/daily-report");
   revalidatePath("/");
   return {
     success: `Recorded ${service.name} · ${parsed.data.paymentMethod === "momo" ? "MoMo" : "Cash"}.`,

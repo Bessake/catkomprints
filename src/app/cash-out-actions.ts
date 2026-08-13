@@ -59,6 +59,8 @@ export async function recordCashOutAction(
   });
 
   revalidatePath("/cash-out");
+  revalidatePath("/services");
+  revalidatePath("/daily-report");
   revalidatePath("/");
   return {
     success: `Recorded ${parsed.data.paymentMethod === "momo" ? "MoMo" : "cash"} take-out.`,
@@ -69,4 +71,7 @@ export async function deleteCashOutAction(cashOutId: string) {
   await requireSession();
   await prisma.cashOut.delete({ where: { id: cashOutId } });
   revalidatePath("/cash-out");
+  revalidatePath("/services");
+  revalidatePath("/daily-report");
+  revalidatePath("/");
 }

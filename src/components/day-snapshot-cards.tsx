@@ -1,5 +1,9 @@
 import { formatCurrency } from "@/lib/utils";
-import type { DaySnapshot } from "@/lib/day-report";
+import {
+  netCashOnHand,
+  netMomoOnHand,
+  type DaySnapshot,
+} from "@/lib/day-report";
 
 export function DaySnapshotCards({
   snapshot,
@@ -22,7 +26,9 @@ export function DaySnapshotCards({
     | "stockInUnits"
   >;
 }) {
-  const serviceIn = snapshot.serviceMomoTotal + snapshot.serviceCashTotal;
+  const momoOnHand = netMomoOnHand(snapshot);
+  const cashOnHand = netCashOnHand(snapshot);
+  const onHand = momoOnHand + cashOnHand;
   const moneyOut = snapshot.cashOutMomoTotal + snapshot.cashOutCashTotal;
 
   return (
@@ -33,24 +39,24 @@ export function DaySnapshotCards({
           <strong>{snapshot.serviceCount}</strong>
         </div>
         <div className="stat-card">
-          <span className="muted">MoMo in</span>
-          <strong>{formatCurrency(snapshot.serviceMomoTotal)}</strong>
+          <span className="muted">MoMo on hand</span>
+          <strong>{formatCurrency(momoOnHand)}</strong>
           <p className="muted" style={{ margin: "0.35rem 0 0" }}>
-            {snapshot.serviceMomoCount} job
-            {snapshot.serviceMomoCount === 1 ? "" : "s"}
+            {formatCurrency(snapshot.serviceMomoTotal)} in −{" "}
+            {formatCurrency(snapshot.cashOutMomoTotal)} out
           </p>
         </div>
         <div className="stat-card">
-          <span className="muted">Cash in</span>
-          <strong>{formatCurrency(snapshot.serviceCashTotal)}</strong>
+          <span className="muted">Cash on hand</span>
+          <strong>{formatCurrency(cashOnHand)}</strong>
           <p className="muted" style={{ margin: "0.35rem 0 0" }}>
-            {snapshot.serviceCashCount} job
-            {snapshot.serviceCashCount === 1 ? "" : "s"}
+            {formatCurrency(snapshot.serviceCashTotal)} in −{" "}
+            {formatCurrency(snapshot.cashOutCashTotal)} out
           </p>
         </div>
         <div className="stat-card">
-          <span className="muted">Total in</span>
-          <strong>{formatCurrency(serviceIn)}</strong>
+          <span className="muted">Total on hand</span>
+          <strong>{formatCurrency(onHand)}</strong>
         </div>
       </div>
 

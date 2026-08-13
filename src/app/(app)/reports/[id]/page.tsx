@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { DayActivityLists } from "@/components/day-activity-lists";
 import { DaySnapshotCards } from "@/components/day-snapshot-cards";
 import { auth } from "@/lib/auth";
+import { buildDayActivity, parseDayActivity } from "@/lib/day-report";
 import { prisma } from "@/lib/prisma";
 import { formatDate, formatDateShort } from "@/lib/utils";
 
@@ -34,6 +36,10 @@ export default async function ReportDetailPage({
   });
   if (!report) notFound();
 
+  const activity =
+    parseDayActivity(report.activity) ??
+    (await buildDayActivity(report.reportDate));
+
   return (
     <>
       <div className="page-header">
@@ -51,6 +57,7 @@ export default async function ReportDetailPage({
       </div>
 
       <DaySnapshotCards snapshot={report} />
+      <DayActivityLists activity={activity} />
 
       <section className="panel" style={{ marginTop: "1.25rem" }}>
         <h2>Notes</h2>
