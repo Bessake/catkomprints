@@ -61,17 +61,32 @@ export function ProductForm({
         </select>
       </label>
 
-      {!product && (
+      <div className="form-grid two">
         <label>
-          Initial quantity
+          Unit price (GH₵)
           <input
-            name="initialQuantity"
+            name="unitPrice"
             type="number"
             min={0}
-            defaultValue={0}
+            step="0.01"
+            defaultValue={product?.unitPrice ?? 0}
+            placeholder="0.00"
           />
         </label>
-      )}
+        {!product ? (
+          <label>
+            Initial quantity
+            <input
+              name="initialQuantity"
+              type="number"
+              min={0}
+              defaultValue={0}
+            />
+          </label>
+        ) : (
+          <span />
+        )}
+      </div>
 
       <label className="checkbox-row">
         <input

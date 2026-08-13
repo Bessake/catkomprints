@@ -16,6 +16,7 @@ async function requireSession() {
 const productSchema = z.object({
   name: z.string().trim().min(1).max(120),
   description: z.string().trim().max(2000).optional().default(""),
+  unitPrice: z.coerce.number().min(0).optional().default(0),
   categoryId: z.string().optional(),
   active: z.coerce.boolean().optional().default(true),
 });
@@ -41,6 +42,7 @@ export async function createProductAction(
   const parsed = productSchema.safeParse({
     name: formData.get("name"),
     description: formData.get("description") || "",
+    unitPrice: formData.get("unitPrice") || 0,
     categoryId: formData.get("categoryId") || undefined,
     active: formData.get("active") === "on",
   });
@@ -68,7 +70,7 @@ export async function createProductAction(
           name: parsed.data.name,
           description: parsed.data.description,
           reorderLevel: 10,
-          unitPrice: 0,
+          unitPrice: parsed.data.unitPrice,
           costPrice: 0,
           categoryId,
           active: parsed.data.active,
@@ -113,6 +115,7 @@ export async function createProductAction(
 
 const deskProductSchema = z.object({
   name: z.string().trim().min(1).max(120),
+  unitPrice: z.coerce.number().min(0).optional().default(0),
   categoryId: z.string().optional(),
   initialQuantity: z.coerce.number().int().min(0).optional().default(0),
 });
@@ -125,6 +128,7 @@ export async function createDeskProductAction(
 
   const parsed = deskProductSchema.safeParse({
     name: formData.get("name"),
+    unitPrice: formData.get("unitPrice") || 0,
     categoryId: formData.get("categoryId") || undefined,
     initialQuantity: formData.get("initialQuantity") || 0,
   });
@@ -148,7 +152,7 @@ export async function createDeskProductAction(
           name: parsed.data.name,
           quantity: initialQty,
           reorderLevel: 10,
-          unitPrice: 0,
+          unitPrice: parsed.data.unitPrice,
           costPrice: 0,
           categoryId,
           active: true,
@@ -268,6 +272,7 @@ export async function updateProductAction(
   const parsed = productSchema.safeParse({
     name: formData.get("name"),
     description: formData.get("description") || "",
+    unitPrice: formData.get("unitPrice") || 0,
     categoryId: formData.get("categoryId") || undefined,
     active: formData.get("active") === "on",
   });
@@ -287,6 +292,7 @@ export async function updateProductAction(
       data: {
         name: parsed.data.name,
         description: parsed.data.description,
+        unitPrice: parsed.data.unitPrice,
         categoryId,
         active: parsed.data.active,
       },
