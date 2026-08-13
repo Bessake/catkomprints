@@ -18,6 +18,7 @@ const saleSchema = z.object({
   cost: z.coerce.number().min(0),
   paymentMethod: z.enum(["momo", "cash"]),
   clientName: z.string().trim().max(120).optional().default(""),
+  momoName: z.string().trim().max(120).optional().default(""),
   note: z.string().trim().max(500).optional().default(""),
   servedDate: z.string().min(1),
   servedTime: z.string().min(1),
@@ -34,6 +35,7 @@ export async function recordServiceSaleAction(
     cost: formData.get("cost"),
     paymentMethod: formData.get("paymentMethod"),
     clientName: formData.get("clientName") || "",
+    momoName: formData.get("momoName") || "",
     note: formData.get("note") || "",
     servedDate: formData.get("servedDate"),
     servedTime: formData.get("servedTime"),
@@ -41,6 +43,10 @@ export async function recordServiceSaleAction(
 
   if (!parsed.success) {
     return { error: "Select a service, cost, and whether the client paid MoMo or cash." };
+  }
+
+  if (parsed.data.paymentMethod === "momo" && !parsed.data.momoName) {
+    return { error: "Enter the MoMo name that appeared on the payment." };
   }
 
   const servedAt = new Date(`${parsed.data.servedDate}T${parsed.data.servedTime}`);
@@ -61,6 +67,8 @@ export async function recordServiceSaleAction(
       cost: parsed.data.cost,
       paymentMethod: parsed.data.paymentMethod,
       clientName: parsed.data.clientName,
+      momoName:
+        parsed.data.paymentMethod === "momo" ? parsed.data.momoName : "",
       note: parsed.data.note,
       servedAt,
       createdById: session.user.id,

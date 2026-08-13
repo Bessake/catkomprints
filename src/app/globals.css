@@ -478,6 +478,13 @@ a.brand-lockup,
   padding: 0 0.3rem;
 }
 
+.payment-clients-footer {
+  display: grid;
+  gap: 1.1rem;
+  grid-template-columns: 1fr 1fr;
+  margin-top: 1.5rem;
+}
+
 .filters {
   display: flex;
   flex-wrap: wrap;
@@ -708,6 +715,7 @@ input[readonly] {
   .app-shell,
   .stat-grid,
   .detail-layout,
+  .payment-clients-footer,
   .form-grid.two {
     grid-template-columns: 1fr;
   }

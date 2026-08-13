@@ -34,6 +34,8 @@ export function ServiceSaleForm({ services }: { services: ServiceOption[] }) {
   );
   const [serviceId, setServiceId] = useState("");
   const [cost, setCost] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<"momo" | "cash" | "">("");
+  const [momoName, setMomoName] = useState("");
   const [now, setNow] = useState(() => new Date());
 
   useEffect(() => {
@@ -45,6 +47,8 @@ export function ServiceSaleForm({ services }: { services: ServiceOption[] }) {
     if (state?.success) {
       setServiceId("");
       setCost("");
+      setPaymentMethod("");
+      setMomoName("");
     }
   }, [state]);
 
@@ -114,14 +118,44 @@ export function ServiceSaleForm({ services }: { services: ServiceOption[] }) {
       <fieldset className="payment-fieldset">
         <legend>How did the client pay?</legend>
         <label className="checkbox-row">
-          <input type="radio" name="paymentMethod" value="momo" required />
+          <input
+            type="radio"
+            name="paymentMethod"
+            value="momo"
+            required
+            checked={paymentMethod === "momo"}
+            onChange={() => setPaymentMethod("momo")}
+          />
           MoMo
         </label>
         <label className="checkbox-row">
-          <input type="radio" name="paymentMethod" value="cash" required />
+          <input
+            type="radio"
+            name="paymentMethod"
+            value="cash"
+            required
+            checked={paymentMethod === "cash"}
+            onChange={() => {
+              setPaymentMethod("cash");
+              setMomoName("");
+            }}
+          />
           Cash
         </label>
       </fieldset>
+
+      {paymentMethod === "momo" ? (
+        <label>
+          MoMo name
+          <input
+            name="momoName"
+            required
+            value={momoName}
+            onChange={(event) => setMomoName(event.target.value)}
+            placeholder="Name on the MoMo payment"
+          />
+        </label>
+      ) : null}
 
       <label>
         Note

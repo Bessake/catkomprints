@@ -35,7 +35,7 @@ export default async function ServicesPage({
   const startOfToday = new Date();
   startOfToday.setHours(0, 0, 0, 0);
 
-  const [catalog, sales, todaySales] = await Promise.all([
+  const [catalog, sales, todaySales, allSales] = await Promise.all([
     prisma.pressService.findMany({
       include: { _count: { select: { sales: true } } },
       orderBy: { name: "asc" },
@@ -50,6 +50,10 @@ export default async function ServicesPage({
       where: { servedAt: { gte: startOfToday } },
       select: { cost: true, paymentMethod: true },
     }),
+    prisma.serviceSale.findMany({
+      include: { service: true },
+      orderBy: { servedAt: "desc" },
+    }),
   ]);
 
   const activeServices = catalog.filter((service) => service.active);
@@ -60,6 +64,10 @@ export default async function ServicesPage({
   const todayCash = todaySales
     .filter((sale) => sale.paymentMethod === "cash")
     .reduce((sum, sale) => sum + sale.cost, 0);
+  const momoClients = allSales.filter((sale) => sale.paymentMethod === "momo");
+  const cashClients = allSales.filter((sale) => sale.paymentMethod === "cash");
+  const momoTotal = momoClients.reduce((sum, sale) => sum + sale.cost, 0);
+  const cashTotal = cashClients.reduce((sum, sale) => sum + sale.cost, 0);
 
   return (
     <>
@@ -187,6 +195,7 @@ export default async function ServicesPage({
                   <th>Date & time</th>
                   <th>Service</th>
                   <th>Client</th>
+                  <th>MoMo name</th>
                   <th>Cost</th>
                   <th>Payment</th>
                   <th>Recorded by</th>
@@ -205,6 +214,11 @@ export default async function ServicesPage({
                       ) : null}
                     </td>
                     <td>{sale.clientName || "—"}</td>
+                    <td>
+                      {sale.paymentMethod === "momo"
+                        ? sale.momoName || "—"
+                        : "—"}
+                    </td>
                     <td>{formatCurrency(sale.cost)}</td>
                     <td>
                       <span className={`badge ${sale.paymentMethod}`}>
@@ -219,6 +233,78 @@ export default async function ServicesPage({
           </div>
         )}
       </section>
+
+      <footer className="payment-clients-footer">
+        <section className="panel">
+          <h2>MoMo clients</h2>
+          <p className="muted" style={{ marginTop: 0 }}>
+            {momoClients.length} payment{momoClients.length === 1 ? "" : "s"} ·{" "}
+            {formatCurrency(momoTotal)}
+          </p>
+          {momoClients.length === 0 ? (
+            <p className="muted">No MoMo payments yet.</p>
+          ) : (
+            <div className="admin-table-wrap">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>MoMo name</th>
+                    <th>Client</th>
+                    <th>Service</th>
+                    <th>Cost</th>
+                    <th>Date & time</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {momoClients.map((sale) => (
+                    <tr key={sale.id}>
+                      <td>{sale.momoName || "—"}</td>
+                      <td>{sale.clientName || "—"}</td>
+                      <td>{sale.service.name}</td>
+                      <td>{formatCurrency(sale.cost)}</td>
+                      <td>{formatDate(sale.servedAt)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+
+        <section className="panel">
+          <h2>Cash clients</h2>
+          <p className="muted" style={{ marginTop: 0 }}>
+            {cashClients.length} payment{cashClients.length === 1 ? "" : "s"} ·{" "}
+            {formatCurrency(cashTotal)}
+          </p>
+          {cashClients.length === 0 ? (
+            <p className="muted">No cash payments yet.</p>
+          ) : (
+            <div className="admin-table-wrap">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Client</th>
+                    <th>Service</th>
+                    <th>Cost</th>
+                    <th>Date & time</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {cashClients.map((sale) => (
+                    <tr key={sale.id}>
+                      <td>{sale.clientName || "Walk-in"}</td>
+                      <td>{sale.service.name}</td>
+                      <td>{formatCurrency(sale.cost)}</td>
+                      <td>{formatDate(sale.servedAt)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+      </footer>
     </>
   );
 }

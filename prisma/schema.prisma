@@ -203,6 +203,7 @@ model ServiceSale {
   cost          Float
   paymentMethod PaymentMethod
   clientName    String         @default("")
+  momoName      String         @default("")
   note          String         @default("")
   servedAt      DateTime
   createdById   String?
