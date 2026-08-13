@@ -170,3 +170,11 @@ export async function toggleFloorStaffAction(staffId: string) {
   revalidatePath("/staff");
   revalidatePath("/operator");
 }
+
+export async function deleteFloorStaffAction(staffId: string) {
+  await requireAdminAccess();
+  await prisma.floorStaff.delete({ where: { id: staffId } });
+  revalidatePath("/staff");
+  revalidatePath("/operator");
+  revalidatePath("/movements");
+}

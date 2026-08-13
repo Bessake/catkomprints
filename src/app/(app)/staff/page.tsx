@@ -1,4 +1,7 @@
-import { toggleFloorStaffAction } from "@/app/operator/actions";
+import {
+  deleteFloorStaffAction,
+  toggleFloorStaffAction,
+} from "@/app/operator/actions";
 import { FloorStaffForm } from "@/components/floor-staff-form";
 import { prisma } from "@/lib/prisma";
 
@@ -44,6 +47,7 @@ export default async function StaffPage() {
                 <tbody>
                   {staff.map((member) => {
                     const toggle = toggleFloorStaffAction.bind(null, member.id);
+                    const remove = deleteFloorStaffAction.bind(null, member.id);
                     return (
                       <tr key={member.id}>
                         <td>{member.name}</td>
@@ -56,11 +60,18 @@ export default async function StaffPage() {
                           )}
                         </td>
                         <td>
-                          <form action={toggle}>
-                            <button type="submit" className="button secondary">
-                              {member.active ? "Deactivate" : "Activate"}
-                            </button>
-                          </form>
+                          <div className="actions">
+                            <form action={toggle}>
+                              <button type="submit" className="button secondary">
+                                {member.active ? "Deactivate" : "Activate"}
+                              </button>
+                            </form>
+                            <form action={remove}>
+                              <button type="submit" className="button danger">
+                                Delete
+                              </button>
+                            </form>
+                          </div>
                         </td>
                       </tr>
                     );
