@@ -54,6 +54,9 @@ export default async function DashboardPage() {
           <h1>Dashboard</h1>
         </div>
         <div className="actions">
+          <Link href="/services" className="button secondary">
+            Record service
+          </Link>
           <Link href="/invoices/new" className="button secondary">
             New invoice
           </Link>

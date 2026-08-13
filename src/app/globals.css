@@ -455,6 +455,29 @@ a.brand-lockup,
   color: var(--brand-blue-deep);
 }
 
+.badge.momo {
+  background: rgba(255, 140, 0, 0.16);
+  color: #b35400;
+}
+
+.badge.cash {
+  background: rgba(27, 122, 74, 0.12);
+  color: var(--ok);
+}
+
+.payment-fieldset {
+  border: 1px solid var(--line);
+  border-radius: 0.7rem;
+  padding: 0.85rem 1rem;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.payment-fieldset legend {
+  font-weight: 600;
+  padding: 0 0.3rem;
+}
+
 .filters {
   display: flex;
   flex-wrap: wrap;

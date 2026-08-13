@@ -40,6 +40,11 @@ enum SmsStatus {
   simulated
 }
 
+enum PaymentMethod {
+  momo
+  cash
+}
+
 model User {
   id           String          @id @default(cuid())
   name         String
@@ -51,6 +56,7 @@ model User {
   movements    StockMovement[]
   invoices     Invoice[]
   smsMessages  SmsMessage[]
+  serviceSales ServiceSale[]
 }
 
 model Category {
@@ -178,4 +184,32 @@ model SmsMessage {
 
   @@index([createdAt])
   @@index([kind])
+}
+
+model PressService {
+  id          String        @id @default(cuid())
+  name        String        @unique
+  defaultCost Float         @default(0)
+  active      Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  sales       ServiceSale[]
+}
+
+model ServiceSale {
+  id            String         @id @default(cuid())
+  serviceId     String
+  service       PressService   @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+  cost          Float
+  paymentMethod PaymentMethod
+  clientName    String         @default("")
+  note          String         @default("")
+  servedAt      DateTime
+  createdById   String?
+  createdBy     User?          @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt     DateTime       @default(now())
+
+  @@index([servedAt])
+  @@index([paymentMethod])
+  @@index([serviceId])
 }

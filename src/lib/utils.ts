@@ -9,7 +9,8 @@ export function formatCurrency(amount: number, currency = "GHS") {
 }
 
 export function formatDate(date: Date | string) {
-  return new Intl.DateTimeFormat("en-US", {
+  return new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Africa/Accra",
     year: "numeric",
     month: "short",
     day: "numeric",
@@ -19,7 +20,8 @@ export function formatDate(date: Date | string) {
 }
 
 export function formatDateShort(date: Date | string) {
-  return new Intl.DateTimeFormat("en-US", {
+  return new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Africa/Accra",
     year: "numeric",
     month: "short",
     day: "numeric",
@@ -39,6 +41,11 @@ export const invoiceStatusLabels: Record<InvoiceStatus, string> = {
   overdue: "Overdue",
   cancelled: "Cancelled",
 };
+
+export const paymentMethodLabels = {
+  momo: "MoMo",
+  cash: "Cash",
+} as const;
 
 export function isLowStock(quantity: number, reorderLevel: number) {
   return quantity <= reorderLevel;

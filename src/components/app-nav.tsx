@@ -4,6 +4,7 @@ import { BrandLogo } from "@/components/brand-logo";
 
 const links = [
   { href: "/", label: "Dashboard" },
+  { href: "/services", label: "Services" },
   { href: "/products", label: "Products" },
   { href: "/invoices", label: "Invoices" },
   { href: "/clients", label: "Clients" },

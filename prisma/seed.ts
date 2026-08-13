@@ -1,5 +1,6 @@
 import { PrismaClient, Role, MovementType, InvoiceStatus } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { DEFAULT_PRESS_SERVICES } from "../src/lib/press-services";
 
 const prisma = new PrismaClient();
 
@@ -9,6 +10,8 @@ async function main() {
   await prisma.invoice.deleteMany();
   await prisma.client.deleteMany();
   await prisma.stockMovement.deleteMany();
+  await prisma.serviceSale.deleteMany();
+  await prisma.pressService.deleteMany();
   await prisma.floorStaff.deleteMany();
   await prisma.product.deleteMany();
   await prisma.category.deleteMany();
@@ -18,7 +21,7 @@ async function main() {
 
   const admin = await prisma.user.create({
     data: {
-      name: "Alex Morgan",
+      name: "Cynthia Larbi",
       email: "admin@catkomprints.local",
       passwordHash,
       role: Role.admin,
@@ -50,6 +53,10 @@ async function main() {
     data: { name: "Staff B" },
   });
   await prisma.floorStaff.create({ data: { name: "Staff C" } });
+
+  await prisma.pressService.createMany({
+    data: DEFAULT_PRESS_SERVICES.map((name) => ({ name })),
+  });
 
   const paper = await prisma.category.create({ data: { name: "Paper & substrates" } });
   const ink = await prisma.category.create({ data: { name: "Ink & toner" } });
