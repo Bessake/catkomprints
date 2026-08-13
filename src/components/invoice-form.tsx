@@ -118,7 +118,7 @@ export function InvoiceForm({
                 <th>Product</th>
                 <th>Description</th>
                 <th>Qty</th>
-                <th>Unit price</th>
+                <th>Unit price (GH₵)</th>
                 <th>Line total</th>
                 <th />
               </tr>

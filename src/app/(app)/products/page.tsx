@@ -87,7 +87,7 @@ export default async function ProductsPage({
                   <th>Product</th>
                   <th>Category</th>
                   <th>Qty</th>
-                  <th>Unit price</th>
+                  <th>Unit price (GH₵)</th>
                   <th>Status</th>
                 </tr>
               </thead>

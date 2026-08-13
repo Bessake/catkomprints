@@ -1,7 +1,7 @@
 import type { InvoiceStatus } from "@prisma/client";
 
-export function formatCurrency(amount: number, currency = "USD") {
-  return new Intl.NumberFormat("en-US", {
+export function formatCurrency(amount: number, currency = "GHS") {
+  return new Intl.NumberFormat("en-GH", {
     style: "currency",
     currency,
     maximumFractionDigits: 2,

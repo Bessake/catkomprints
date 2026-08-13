@@ -86,7 +86,7 @@ export function ProductForm({
 
       <div className="form-grid two">
         <label>
-          Unit price
+          Unit price (GH₵)
           <input
             name="unitPrice"
             type="number"
@@ -97,7 +97,7 @@ export function ProductForm({
           />
         </label>
         <label>
-          Cost price
+          Cost price (GH₵)
           <input
             name="costPrice"
             type="number"
