@@ -43,7 +43,7 @@ async function main() {
 
   await prisma.user.create({
     data: {
-      name: "Sam Okello",
+      name: "Operator",
       email: "operator@catkomprints.local",
       passwordHash,
       role: Role.operator,

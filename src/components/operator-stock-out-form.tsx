@@ -118,11 +118,7 @@ export function OperatorStockOutForm({
               ? `${product.categoryName} — ${product.name} (${product.sku})`
               : `${product.name} (${product.sku})`;
             return (
-              <option
-                key={product.id}
-                value={product.id}
-                disabled={product.quantity <= 0}
-              >
+              <option key={product.id} value={product.id}>
                 {label} · {product.quantity} on hand
               </option>
             );

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ensureDefaultPrintMaterials } from "@/lib/ensure-print-materials";
 import { prisma } from "@/lib/prisma";
 import { formatCurrency, isLowStock } from "@/lib/utils";
 
@@ -11,6 +12,7 @@ export default async function ProductsPage({
 }: {
   searchParams: Promise<{ q?: string; filter?: string }>;
 }) {
+  await ensureDefaultPrintMaterials();
   const params = await searchParams;
   const q = params.q?.trim() || "";
   const filter = params.filter || "all";

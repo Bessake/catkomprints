@@ -1,4 +1,8 @@
 import { OperatorStockOutForm } from "@/components/operator-stock-out-form";
+import {
+  ensureDefaultFloorStaff,
+  ensureDefaultPrintMaterials,
+} from "@/lib/ensure-print-materials";
 import { prisma } from "@/lib/prisma";
 
 export const metadata = {
@@ -6,6 +10,8 @@ export const metadata = {
 };
 
 export default async function OperatorHomePage() {
+  await ensureDefaultPrintMaterials();
+  await ensureDefaultFloorStaff();
   const [products, staff] = await Promise.all([
     prisma.product.findMany({
       where: { active: true },

@@ -31,9 +31,11 @@ export default async function OperatorFloorLayout({
             </div>
           </Link>
           <div className="operator-header-actions">
-            <span className="muted">
-              {session.user.name} · {session.user.role}
-            </span>
+            {session.user.role === "operator" ? null : (
+              <span className="muted">
+                {session.user.name} · {session.user.role}
+              </span>
+            )}
             {session.user.role !== "operator" ? (
               <Link href="/" className="button secondary">
                 Admin
