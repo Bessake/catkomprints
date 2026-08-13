@@ -14,7 +14,6 @@ async function requireSession() {
 }
 
 const productSchema = z.object({
-  sku: z.string().trim().min(1).max(64),
   name: z.string().trim().min(1).max(120),
   description: z.string().trim().max(2000).optional().default(""),
   reorderLevel: z.coerce.number().int().min(0),
@@ -26,6 +25,16 @@ const productSchema = z.object({
 
 export type ActionState = { error?: string; success?: string } | null;
 
+function skuFromName(name: string) {
+  const slug = name
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 20);
+  const suffix = Date.now().toString(36).toUpperCase().slice(-6);
+  return `${slug || "ITEM"}-${suffix}`;
+}
+
 export async function createProductAction(
   _prev: ActionState,
   formData: FormData,
@@ -33,7 +42,6 @@ export async function createProductAction(
   const session = await requireSession();
 
   const parsed = productSchema.safeParse({
-    sku: formData.get("sku"),
     name: formData.get("name"),
     description: formData.get("description") || "",
     reorderLevel: formData.get("reorderLevel"),
@@ -62,7 +70,7 @@ export async function createProductAction(
     const product = await prisma.$transaction(async (tx) => {
       const created = await tx.product.create({
         data: {
-          sku: parsed.data.sku.toUpperCase(),
+          sku: skuFromName(parsed.data.name),
           name: parsed.data.name,
           description: parsed.data.description,
           reorderLevel: parsed.data.reorderLevel,
@@ -96,7 +104,7 @@ export async function createProductAction(
       "code" in error &&
       error.code === "P2002"
     ) {
-      return { error: "A product with that SKU already exists." };
+      return { error: "Could not add that product. Try again." };
     }
     throw error;
   }
@@ -114,16 +122,6 @@ const deskProductSchema = z.object({
   categoryId: z.string().optional(),
   initialQuantity: z.coerce.number().int().min(0).optional().default(0),
 });
-
-function skuFromName(name: string) {
-  const slug = name
-    .toUpperCase()
-    .replace(/[^A-Z0-9]+/g, "-")
-    .replace(/^-|-$/g, "")
-    .slice(0, 20);
-  const suffix = Date.now().toString(36).toUpperCase().slice(-6);
-  return `${slug || "ITEM"}-${suffix}`;
-}
 
 export async function createDeskProductAction(
   _prev: ActionState,
@@ -274,7 +272,6 @@ export async function updateProductAction(
   await requireSession();
 
   const parsed = productSchema.safeParse({
-    sku: formData.get("sku"),
     name: formData.get("name"),
     description: formData.get("description") || "",
     reorderLevel: formData.get("reorderLevel"),
@@ -297,7 +294,6 @@ export async function updateProductAction(
     await prisma.product.update({
       where: { id: productId },
       data: {
-        sku: parsed.data.sku.toUpperCase(),
         name: parsed.data.name,
         description: parsed.data.description,
         reorderLevel: parsed.data.reorderLevel,

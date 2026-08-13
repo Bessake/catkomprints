@@ -27,26 +27,15 @@ export function ProductForm({
       {state?.error && <p className="error-text">{state.error}</p>}
       {state?.success && <div className="success-banner">{state.success}</div>}
 
-      <div className="form-grid two">
-        <label>
-          SKU
-          <input
-            name="sku"
-            required
-            defaultValue={product?.sku}
-            placeholder="EL-USB-C-01"
-          />
-        </label>
-        <label>
-          Name
-          <input
-            name="name"
-            required
-            defaultValue={product?.name}
-            placeholder="Product name"
-          />
-        </label>
-      </div>
+      <label>
+        Name
+        <input
+          name="name"
+          required
+          defaultValue={product?.name}
+          placeholder="Product name"
+        />
+      </label>
 
       <label>
         Description

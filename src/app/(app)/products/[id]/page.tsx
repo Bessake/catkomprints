@@ -51,7 +51,7 @@ export default async function ProductDetailPage({
     <>
       <div className="page-header">
         <div>
-          <p className="eyebrow">{product.sku}</p>
+          <p className="eyebrow">Product</p>
           <h1>{product.name}</h1>
           <p className="muted" style={{ margin: "0.4rem 0 0" }}>
             {product.category?.name || "Uncategorized"} ·{" "}

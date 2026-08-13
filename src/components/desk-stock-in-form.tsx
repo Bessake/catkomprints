@@ -79,8 +79,8 @@ export function DeskStockInForm({ products }: { products: ProductOption[] }) {
           </option>
           {sorted.map((product) => {
             const label = product.categoryName
-              ? `${product.categoryName} — ${product.name} (${product.sku})`
-              : `${product.name} (${product.sku})`;
+              ? `${product.categoryName} — ${product.name}`
+              : product.name;
             return (
               <option key={product.id} value={product.id}>
                 {label} · {product.quantity} on hand

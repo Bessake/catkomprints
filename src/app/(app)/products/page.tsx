@@ -63,7 +63,7 @@ export default async function ProductsPage({
             <input
               name="q"
               defaultValue={q}
-              placeholder="Name or SKU"
+              placeholder="Product name"
             />
           </label>
           <label>
@@ -106,9 +106,6 @@ export default async function ProductsPage({
                         <Link href={`/products/${product.id}`}>
                           {product.name}
                         </Link>
-                        <div className="muted" style={{ fontSize: "0.85rem" }}>
-                          {product.sku}
-                        </div>
                         <form action={remove} style={{ marginTop: "0.45rem" }}>
                           <button type="submit" className="button danger">
                             Delete
