@@ -222,6 +222,7 @@ model CashOut {
   amount        Float
   paymentMethod PaymentMethod
   purpose       String
+  momoName      String         @default("")
   takenAt       DateTime
   createdById   String?
   createdBy     User?          @relation(fields: [createdById], references: [id], onDelete: SetNull)

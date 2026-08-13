@@ -29,6 +29,7 @@ export function CashOutForm({ recorderName }: { recorderName: string }) {
   const [paymentMethod, setPaymentMethod] = useState<"momo" | "cash" | "">("");
   const [amount, setAmount] = useState("");
   const [purpose, setPurpose] = useState("");
+  const [momoName, setMomoName] = useState("");
   const [now, setNow] = useState(() => new Date());
 
   useEffect(() => {
@@ -41,6 +42,7 @@ export function CashOutForm({ recorderName }: { recorderName: string }) {
       setPaymentMethod("");
       setAmount("");
       setPurpose("");
+      setMomoName("");
     }
   }, [state]);
 
@@ -90,12 +92,28 @@ export function CashOutForm({ recorderName }: { recorderName: string }) {
               value="cash"
               required
               checked={paymentMethod === "cash"}
-              onChange={() => setPaymentMethod("cash")}
+              onChange={() => {
+                setPaymentMethod("cash");
+                setMomoName("");
+              }}
             />
             Cash
           </label>
         </fieldset>
       </div>
+
+      {paymentMethod === "momo" ? (
+        <label>
+          MoMo name
+          <input
+            name="momoName"
+            required
+            value={momoName}
+            onChange={(event) => setMomoName(event.target.value)}
+            placeholder="Name on the MoMo take-out"
+          />
+        </label>
+      ) : null}
 
       <label>
         Purpose of cash / MoMo out
@@ -133,7 +151,13 @@ export function CashOutForm({ recorderName }: { recorderName: string }) {
       <button
         type="submit"
         className="button"
-        disabled={pending || !paymentMethod || !amount || !purpose.trim()}
+        disabled={
+          pending ||
+          !paymentMethod ||
+          !amount ||
+          !purpose.trim() ||
+          (paymentMethod === "momo" && !momoName.trim())
+        }
       >
         {pending ? "Recording…" : "Record take-out"}
       </button>

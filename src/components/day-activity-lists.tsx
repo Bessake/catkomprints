@@ -127,6 +127,7 @@ export function DayActivityLists({ activity }: { activity: DayActivity }) {
                   <th>Date & time</th>
                   <th>Amount</th>
                   <th>Taken as</th>
+                  <th>MoMo name</th>
                   <th>Purpose</th>
                   <th>Recorded by</th>
                 </tr>
@@ -140,6 +141,9 @@ export function DayActivityLists({ activity }: { activity: DayActivity }) {
                       <span className={`badge ${entry.payment}`}>
                         {paymentMethodLabels[entry.payment]}
                       </span>
+                    </td>
+                    <td>
+                      {entry.payment === "momo" ? entry.momoName || "—" : "—"}
                     </td>
                     <td>{entry.purpose}</td>
                     <td>{entry.recordedBy || "—"}</td>

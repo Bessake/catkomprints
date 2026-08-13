@@ -118,9 +118,8 @@ export default async function CashOutPage({
         <section className="panel">
           <h2>How to use</h2>
           <p className="muted" style={{ marginTop: 0 }}>
-            Use this when cash or MoMo leaves the front desk for purchases,
-            errands, or other payments. Enter the amount, choose Cash or MoMo,
-            and write the purpose clearly.
+            Enter the amount, choose Cash or MoMo, and write the purpose
+            clearly. If it is MoMo, enter the MoMo name too.
           </p>
         </section>
       </div>
@@ -153,6 +152,7 @@ export default async function CashOutPage({
                   <th>Date & time</th>
                   <th>Amount</th>
                   <th>Taken as</th>
+                  <th>MoMo name</th>
                   <th>Purpose</th>
                   <th>Recorded by</th>
                   <th />
@@ -169,6 +169,11 @@ export default async function CashOutPage({
                         <span className={`badge ${entry.paymentMethod}`}>
                           {paymentMethodLabels[entry.paymentMethod]}
                         </span>
+                      </td>
+                      <td>
+                        {entry.paymentMethod === "momo"
+                          ? entry.momoName || "—"
+                          : "—"}
                       </td>
                       <td>{entry.purpose}</td>
                       <td>{entry.createdBy?.name || "—"}</td>

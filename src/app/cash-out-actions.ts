@@ -17,6 +17,7 @@ const cashOutSchema = z.object({
   amount: z.coerce.number().positive(),
   paymentMethod: z.enum(["momo", "cash"]),
   purpose: z.string().trim().min(1).max(500),
+  momoName: z.string().trim().max(120).optional().default(""),
   takenDate: z.string().min(1),
   takenTime: z.string().min(1),
 });
@@ -31,6 +32,7 @@ export async function recordCashOutAction(
     amount: formData.get("amount"),
     paymentMethod: formData.get("paymentMethod"),
     purpose: formData.get("purpose"),
+    momoName: formData.get("momoName") || "",
     takenDate: formData.get("takenDate"),
     takenTime: formData.get("takenTime"),
   });
@@ -39,6 +41,10 @@ export async function recordCashOutAction(
     return {
       error: "Enter the amount, MoMo or cash, and the purpose of the take-out.",
     };
+  }
+
+  if (parsed.data.paymentMethod === "momo" && !parsed.data.momoName) {
+    return { error: "Enter the MoMo name for this take-out." };
   }
 
   const takenAt = new Date(
@@ -53,6 +59,8 @@ export async function recordCashOutAction(
       amount: parsed.data.amount,
       paymentMethod: parsed.data.paymentMethod,
       purpose: parsed.data.purpose,
+      momoName:
+        parsed.data.paymentMethod === "momo" ? parsed.data.momoName : "",
       takenAt,
       createdById: session.user.id,
     },

@@ -38,6 +38,7 @@ export type DayActivityCashOut = {
   amount: number;
   payment: "momo" | "cash";
   purpose: string;
+  momoName: string;
   recordedBy: string;
 };
 
@@ -269,6 +270,7 @@ export async function buildDayActivity(now = new Date()): Promise<DayActivity> {
       amount: entry.amount,
       payment: entry.paymentMethod,
       purpose: entry.purpose,
+      momoName: entry.momoName,
       recordedBy: entry.createdBy?.name || "",
     })),
     stockOuts: stockOuts.map(mapStockRow),
