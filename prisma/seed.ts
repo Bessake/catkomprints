@@ -29,7 +29,7 @@ async function main() {
     },
   });
 
-  const frontDeskNames = ["Front Desk 1", "Front Desk 2"];
+  const frontDeskNames = ["Wendy", "Yayra"];
   for (const name of frontDeskNames) {
     await prisma.user.create({
       data: {
