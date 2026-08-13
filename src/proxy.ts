@@ -38,6 +38,15 @@ export default auth((req) => {
     return NextResponse.redirect(new URL("/operator", req.nextUrl.origin));
   }
 
+  if (role === "staff") {
+    if (pathname === "/") {
+      return NextResponse.redirect(new URL("/services", req.nextUrl.origin));
+    }
+    if (pathname === "/reports" || pathname.startsWith("/reports/")) {
+      return NextResponse.redirect(new URL("/daily-report", req.nextUrl.origin));
+    }
+  }
+
   return NextResponse.next();
 });
 

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { InvoiceStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { getAccraDayBounds } from "@/lib/day-report";
 import {
   formatCurrency,
   formatDate,
@@ -13,7 +14,8 @@ export const metadata = {
 };
 
 export default async function DashboardPage() {
-  const [productCount, lowStock, recentMovements, products, unpaidCount] =
+  const { reportDate } = getAccraDayBounds();
+  const [productCount, lowStock, recentMovements, products, unpaidCount, todayReport] =
     await Promise.all([
       prisma.product.count({ where: { active: true } }),
       prisma.product.findMany({
@@ -35,6 +37,10 @@ export default async function DashboardPage() {
       prisma.invoice.count({
         where: { status: { in: [InvoiceStatus.sent, InvoiceStatus.overdue] } },
       }),
+      prisma.dailyReport.findUnique({
+        where: { reportDate },
+        include: { submittedBy: true },
+      }),
     ]);
 
   const lowStockItems = lowStock.filter((p) =>
@@ -54,6 +60,9 @@ export default async function DashboardPage() {
           <h1>Dashboard</h1>
         </div>
         <div className="actions">
+          <Link href="/reports" className="button secondary">
+            Daily reports
+          </Link>
           <Link href="/services" className="button secondary">
             Record service
           </Link>
@@ -83,6 +92,22 @@ export default async function DashboardPage() {
           <span className="muted">Unpaid invoices</span>
           <strong>{unpaidCount}</strong>
         </div>
+      </div>
+
+      <div className={`success-banner${todayReport ? "" : " recording-as"}`} style={{ marginBottom: "1.25rem" }}>
+        {todayReport ? (
+          <>
+            Today’s front desk report was sent by{" "}
+            {todayReport.submittedBy?.name || "front desk"} at{" "}
+            {formatDate(todayReport.submittedAt)}.{" "}
+            <Link href={`/reports/${todayReport.id}`}>Open report →</Link>
+          </>
+        ) : (
+          <>
+            Today’s front desk report has not been sent yet.{" "}
+            <Link href="/reports">View reports →</Link>
+          </>
+        )}
       </div>
 
       <p className="muted" style={{ marginTop: "-0.5rem", marginBottom: "1.25rem" }}>

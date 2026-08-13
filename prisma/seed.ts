@@ -13,6 +13,7 @@ async function main() {
   await prisma.stockMovement.deleteMany();
   await prisma.serviceSale.deleteMany();
   await prisma.cashOut.deleteMany();
+  await prisma.dailyReport.deleteMany();
   await prisma.pressService.deleteMany();
   await prisma.floorStaff.deleteMany();
   await prisma.product.deleteMany();

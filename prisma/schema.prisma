@@ -58,6 +58,7 @@ model User {
   smsMessages  SmsMessage[]
   serviceSales ServiceSale[]
   cashOuts     CashOut[]
+  dailyReports DailyReport[]
 }
 
 model Category {
@@ -228,4 +229,31 @@ model CashOut {
 
   @@index([takenAt])
   @@index([paymentMethod])
+}
+
+model DailyReport {
+  id                 String   @id @default(cuid())
+  reportDate         DateTime @unique @db.Date
+  serviceCount       Int      @default(0)
+  serviceMomoCount   Int      @default(0)
+  serviceCashCount   Int      @default(0)
+  serviceMomoTotal   Float    @default(0)
+  serviceCashTotal   Float    @default(0)
+  cashOutCount       Int      @default(0)
+  cashOutMomoCount   Int      @default(0)
+  cashOutCashCount   Int      @default(0)
+  cashOutMomoTotal   Float    @default(0)
+  cashOutCashTotal   Float    @default(0)
+  stockOutCount      Int      @default(0)
+  stockOutUnits      Int      @default(0)
+  stockInCount       Int      @default(0)
+  stockInUnits       Int      @default(0)
+  notes              String   @default("")
+  submittedById      String?
+  submittedBy        User?    @relation(fields: [submittedById], references: [id], onDelete: SetNull)
+  submittedAt        DateTime @default(now())
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([submittedAt])
 }
