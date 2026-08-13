@@ -16,9 +16,6 @@ async function requireSession() {
 const productSchema = z.object({
   name: z.string().trim().min(1).max(120),
   description: z.string().trim().max(2000).optional().default(""),
-  reorderLevel: z.coerce.number().int().min(0),
-  unitPrice: z.coerce.number().min(0),
-  costPrice: z.coerce.number().min(0),
   categoryId: z.string().optional(),
   active: z.coerce.boolean().optional().default(true),
 });
@@ -44,9 +41,6 @@ export async function createProductAction(
   const parsed = productSchema.safeParse({
     name: formData.get("name"),
     description: formData.get("description") || "",
-    reorderLevel: formData.get("reorderLevel"),
-    unitPrice: formData.get("unitPrice"),
-    costPrice: formData.get("costPrice"),
     categoryId: formData.get("categoryId") || undefined,
     active: formData.get("active") === "on",
   });
@@ -73,9 +67,9 @@ export async function createProductAction(
           sku: skuFromName(parsed.data.name),
           name: parsed.data.name,
           description: parsed.data.description,
-          reorderLevel: parsed.data.reorderLevel,
-          unitPrice: parsed.data.unitPrice,
-          costPrice: parsed.data.costPrice,
+          reorderLevel: 10,
+          unitPrice: 0,
+          costPrice: 0,
           categoryId,
           active: parsed.data.active,
           quantity: initialQty,
@@ -274,9 +268,6 @@ export async function updateProductAction(
   const parsed = productSchema.safeParse({
     name: formData.get("name"),
     description: formData.get("description") || "",
-    reorderLevel: formData.get("reorderLevel"),
-    unitPrice: formData.get("unitPrice"),
-    costPrice: formData.get("costPrice"),
     categoryId: formData.get("categoryId") || undefined,
     active: formData.get("active") === "on",
   });
@@ -296,9 +287,6 @@ export async function updateProductAction(
       data: {
         name: parsed.data.name,
         description: parsed.data.description,
-        reorderLevel: parsed.data.reorderLevel,
-        unitPrice: parsed.data.unitPrice,
-        costPrice: parsed.data.costPrice,
         categoryId,
         active: parsed.data.active,
       },

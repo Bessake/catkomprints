@@ -46,57 +46,20 @@ export function ProductForm({
         />
       </label>
 
-      <div className="form-grid two">
-        <label>
-          Category
-          <select
-            name="categoryId"
-            defaultValue={product?.categoryId || ""}
-          >
-            <option value="">Uncategorized</option>
-            {categories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          Reorder level
-          <input
-            name="reorderLevel"
-            type="number"
-            min={0}
-            required
-            defaultValue={product?.reorderLevel ?? 10}
-          />
-        </label>
-      </div>
-
-      <div className="form-grid two">
-        <label>
-          Unit price (GH₵)
-          <input
-            name="unitPrice"
-            type="number"
-            min={0}
-            step="0.01"
-            required
-            defaultValue={product?.unitPrice ?? 0}
-          />
-        </label>
-        <label>
-          Cost price (GH₵)
-          <input
-            name="costPrice"
-            type="number"
-            min={0}
-            step="0.01"
-            required
-            defaultValue={product?.costPrice ?? 0}
-          />
-        </label>
-      </div>
+      <label>
+        Category
+        <select
+          name="categoryId"
+          defaultValue={product?.categoryId || ""}
+        >
+          <option value="">Uncategorized</option>
+          {categories.map((category) => (
+            <option key={category.id} value={category.id}>
+              {category.name}
+            </option>
+          ))}
+        </select>
+      </label>
 
       {!product && (
         <label>
