@@ -48,6 +48,10 @@ export default async function ProductsPage({
         <div>
           <p className="eyebrow">Catalog</p>
           <h1>Products</h1>
+          <p className="muted" style={{ margin: "0.4rem 0 0" }}>
+            Delete any material you do not use. It will also leave the stock
+            out dropdown.
+          </p>
         </div>
         <Link href="/products/new" className="button">
           Add product
@@ -92,7 +96,6 @@ export default async function ProductsPage({
                   <th>Qty</th>
                   <th>Unit price (GH₵)</th>
                   <th>Status</th>
-                  <th />
                 </tr>
               </thead>
               <tbody>
@@ -108,6 +111,11 @@ export default async function ProductsPage({
                         <div className="muted" style={{ fontSize: "0.85rem" }}>
                           {product.sku}
                         </div>
+                        <form action={remove} style={{ marginTop: "0.45rem" }}>
+                          <button type="submit" className="button danger">
+                            Delete
+                          </button>
+                        </form>
                       </td>
                       <td>{product.category?.name || "—"}</td>
                       <td>
@@ -130,13 +138,6 @@ export default async function ProductsPage({
                         ) : (
                           <span className="badge inactive">Inactive</span>
                         )}
-                      </td>
-                      <td>
-                        <form action={remove}>
-                          <button type="submit" className="button danger">
-                            Delete
-                          </button>
-                        </form>
                       </td>
                     </tr>
                   );
