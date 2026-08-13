@@ -1,4 +1,5 @@
 import { SmsStatus } from "@prisma/client";
+import { normalizePhone } from "@/lib/utils";
 
 type SendSmsInput = {
   to: string;
@@ -39,7 +40,7 @@ export async function sendSms({ to, body }: SendSmsInput): Promise<SendSmsResult
           "Content-Type": "application/x-www-form-urlencoded",
         },
         body: new URLSearchParams({
-          To: to,
+          To: normalizePhone(to),
           From: from,
           Body: body,
         }),

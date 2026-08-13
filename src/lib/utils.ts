@@ -73,6 +73,18 @@ export function calcInvoiceTotals(
 
 export function normalizePhone(phone: string) {
   const trimmed = phone.trim();
-  const digits = trimmed.replace(/[^\d+]/g, "");
+  if (!trimmed) return "";
+
+  let digits = trimmed.replace(/[^\d+]/g, "");
+  if (digits.startsWith("00")) digits = `+${digits.slice(2)}`;
+  if (digits.startsWith("+")) return digits;
+
+  // Ghana local numbers: 0244123456 or 244123456 → +233244123456
+  if (digits.startsWith("233") && digits.length >= 12) return `+${digits}`;
+  if (digits.startsWith("0") && digits.length === 10) {
+    return `+233${digits.slice(1)}`;
+  }
+  if (digits.length === 9) return `+233${digits}`;
+
   return digits;
 }

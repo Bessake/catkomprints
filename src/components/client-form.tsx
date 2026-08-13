@@ -38,7 +38,7 @@ export function ClientForm({ client }: { client?: Client }) {
           Phone (SMS)
           <input
             name="phone"
-            placeholder="+15551234567"
+            placeholder="0244123456 or +233244123456"
             defaultValue={client?.phone || ""}
           />
         </label>
