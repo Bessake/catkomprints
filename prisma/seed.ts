@@ -1,6 +1,7 @@
 import { PrismaClient, Role, MovementType, InvoiceStatus } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { DEFAULT_PRESS_SERVICES } from "../src/lib/press-services";
+import { emailFromFullName } from "../src/lib/user-email";
 
 const prisma = new PrismaClient();
 
@@ -28,14 +29,17 @@ async function main() {
     },
   });
 
-  await prisma.user.create({
-    data: {
-      name: "Jamie Chen",
-      email: "staff@catkomprints.local",
-      passwordHash,
-      role: Role.staff,
-    },
-  });
+  const frontDeskNames = ["Front Desk 1", "Front Desk 2"];
+  for (const name of frontDeskNames) {
+    await prisma.user.create({
+      data: {
+        name,
+        email: emailFromFullName(name),
+        passwordHash,
+        role: Role.staff,
+      },
+    });
+  }
 
   await prisma.user.create({
     data: {

@@ -2,6 +2,7 @@ import { PaymentMethod } from "@prisma/client";
 import { togglePressServiceAction } from "@/app/service-actions";
 import { PressServiceForm } from "@/components/press-service-form";
 import { ServiceSaleForm } from "@/components/service-sale-form";
+import { auth } from "@/lib/auth";
 import { DEFAULT_PRESS_SERVICES } from "@/lib/press-services";
 import { prisma } from "@/lib/prisma";
 import {
@@ -26,6 +27,8 @@ export default async function ServicesPage({
   searchParams: Promise<{ payment?: string }>;
 }) {
   await ensureDefaultPressServices();
+  const session = await auth();
+  const recorderName = session?.user?.name || "Unknown";
   const { payment } = await searchParams;
   const paymentFilter =
     payment === "momo" || payment === "cash"
@@ -51,7 +54,7 @@ export default async function ServicesPage({
       select: { cost: true, paymentMethod: true },
     }),
     prisma.serviceSale.findMany({
-      include: { service: true },
+      include: { service: true, createdBy: true },
       orderBy: { servedAt: "desc" },
     }),
   ]);
@@ -105,6 +108,7 @@ export default async function ServicesPage({
         <section className="panel">
           <h2>Record a service</h2>
           <ServiceSaleForm
+            recorderName={recorderName}
             services={activeServices.map((service) => ({
               id: service.id,
               name: service.name,
@@ -252,6 +256,7 @@ export default async function ServicesPage({
                     <th>Client</th>
                     <th>Service</th>
                     <th>Cost</th>
+                    <th>Recorded by</th>
                     <th>Date & time</th>
                   </tr>
                 </thead>
@@ -262,6 +267,7 @@ export default async function ServicesPage({
                       <td>{sale.clientName || "—"}</td>
                       <td>{sale.service.name}</td>
                       <td>{formatCurrency(sale.cost)}</td>
+                      <td>{sale.createdBy?.name || "—"}</td>
                       <td>{formatDate(sale.servedAt)}</td>
                     </tr>
                   ))}
@@ -287,6 +293,7 @@ export default async function ServicesPage({
                     <th>Client</th>
                     <th>Service</th>
                     <th>Cost</th>
+                    <th>Recorded by</th>
                     <th>Date & time</th>
                   </tr>
                 </thead>
@@ -296,6 +303,7 @@ export default async function ServicesPage({
                       <td>{sale.clientName || "Walk-in"}</td>
                       <td>{sale.service.name}</td>
                       <td>{formatCurrency(sale.cost)}</td>
+                      <td>{sale.createdBy?.name || "—"}</td>
                       <td>{formatDate(sale.servedAt)}</td>
                     </tr>
                   ))}

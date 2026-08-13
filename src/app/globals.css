@@ -572,6 +572,12 @@ a.brand-lockup,
   color: var(--ok);
 }
 
+.recording-as {
+  background: rgba(30, 79, 214, 0.1);
+  border-color: rgba(30, 79, 214, 0.22);
+  color: var(--brand-blue-deep);
+}
+
 .operator-shell {
   min-height: 100vh;
   background:

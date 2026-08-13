@@ -27,7 +27,13 @@ function formatLocalDateTime(date: Date) {
   }).format(date);
 }
 
-export function ServiceSaleForm({ services }: { services: ServiceOption[] }) {
+export function ServiceSaleForm({
+  services,
+  recorderName,
+}: {
+  services: ServiceOption[];
+  recorderName: string;
+}) {
   const [state, formAction, pending] = useActionState(
     recordServiceSaleAction,
     initialState,
@@ -68,6 +74,10 @@ export function ServiceSaleForm({ services }: { services: ServiceOption[] }) {
     <form action={formAction} className="form-grid">
       {state?.error && <p className="error-text">{state.error}</p>}
       {state?.success && <div className="success-banner">{state.success}</div>}
+
+      <div className="success-banner recording-as">
+        Recording as: <strong>{recorderName}</strong>
+      </div>
 
       <label>
         Service
