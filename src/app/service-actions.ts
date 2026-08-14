@@ -14,8 +14,7 @@ async function requireSession() {
 }
 
 const saleSchema = z.object({
-  serviceId: z.string().min(1),
-  cost: z.coerce.number().min(0),
+  serviceIds: z.array(z.string().min(1)).min(1),
   paymentMethod: z.enum(["momo", "cash"]),
   clientName: z.string().trim().max(120).optional().default(""),
   momoName: z.string().trim().max(120).optional().default(""),
@@ -31,8 +30,7 @@ export async function recordServiceSaleAction(
   const session = await requireSession();
 
   const parsed = saleSchema.safeParse({
-    serviceId: formData.get("serviceId"),
-    cost: formData.get("cost"),
+    serviceIds: formData.getAll("serviceIds").map(String),
     paymentMethod: formData.get("paymentMethod"),
     clientName: formData.get("clientName") || "",
     momoName: formData.get("momoName") || "",
@@ -42,7 +40,10 @@ export async function recordServiceSaleAction(
   });
 
   if (!parsed.success) {
-    return { error: "Select a service, cost, and whether the client paid MoMo or cash." };
+    return {
+      error:
+        "Select one or more services, a cost for each, and whether the client paid MoMo or cash.",
+    };
   }
 
   if (parsed.data.paymentMethod === "momo" && !parsed.data.momoName) {
@@ -54,17 +55,29 @@ export async function recordServiceSaleAction(
     return { error: "Date and time look invalid. Try again." };
   }
 
-  const service = await prisma.pressService.findFirst({
-    where: { id: parsed.data.serviceId, active: true },
+  const uniqueIds = [...new Set(parsed.data.serviceIds)];
+  const catalog = await prisma.pressService.findMany({
+    where: { id: { in: uniqueIds }, active: true },
   });
-  if (!service) {
-    return { error: "That service is not available. Pick another from the list." };
+  if (catalog.length !== uniqueIds.length) {
+    return {
+      error: "One of those services is not available. Pick again from the list.",
+    };
   }
 
-  await prisma.serviceSale.create({
-    data: {
-      serviceId: service.id,
-      cost: parsed.data.cost,
+  const lines: { serviceId: string; name: string; cost: number }[] = [];
+  for (const service of catalog) {
+    const cost = Number(formData.get(`cost-${service.id}`));
+    if (!Number.isFinite(cost) || cost < 0) {
+      return { error: `Enter a cost for ${service.name}.` };
+    }
+    lines.push({ serviceId: service.id, name: service.name, cost });
+  }
+
+  await prisma.serviceSale.createMany({
+    data: lines.map((line) => ({
+      serviceId: line.serviceId,
+      cost: line.cost,
       paymentMethod: parsed.data.paymentMethod,
       clientName: parsed.data.clientName,
       momoName:
@@ -72,15 +85,21 @@ export async function recordServiceSaleAction(
       note: parsed.data.note,
       servedAt,
       createdById: session.user.id,
-    },
+    })),
   });
 
   revalidatePath("/services");
   revalidatePath("/cash-out");
   revalidatePath("/daily-report");
   revalidatePath("/");
+
+  const paymentLabel =
+    parsed.data.paymentMethod === "momo" ? "MoMo" : "Cash";
+  if (lines.length === 1) {
+    return { success: `Recorded ${lines[0].name} · ${paymentLabel}.` };
+  }
   return {
-    success: `Recorded ${service.name} · ${parsed.data.paymentMethod === "momo" ? "MoMo" : "Cash"}.`,
+    success: `Recorded ${lines.length} services · ${paymentLabel}.`,
   };
 }
 
