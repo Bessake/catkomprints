@@ -86,6 +86,7 @@ model Product {
   updatedAt    DateTime        @updatedAt
   movements    StockMovement[]
   invoiceItems InvoiceItem[]
+  sales        ServiceSale[]
 
   @@index([name])
   @@index([quantity])
@@ -201,8 +202,11 @@ model PressService {
 
 model ServiceSale {
   id            String         @id @default(cuid())
-  serviceId     String
-  service       PressService   @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+  serviceId     String?
+  service       PressService?  @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+  productId     String?
+  product       Product?       @relation(fields: [productId], references: [id], onDelete: Restrict)
+  quantity      Int            @default(1)
   cost          Float
   paymentMethod PaymentMethod
   clientName    String         @default("")
@@ -216,6 +220,7 @@ model ServiceSale {
   @@index([servedAt])
   @@index([paymentMethod])
   @@index([serviceId])
+  @@index([productId])
 }
 
 model CashOut {

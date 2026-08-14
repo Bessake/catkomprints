@@ -15,6 +15,7 @@ import {
   formatCurrency,
   formatDate,
   paymentMethodLabels,
+  saleLineLabel,
 } from "@/lib/utils";
 
 export const metadata = { title: "Services" };
@@ -52,7 +53,7 @@ export default async function ServicesPage({
     }),
     prisma.serviceSale.findMany({
       where: paymentFilter ? { paymentMethod: paymentFilter } : undefined,
-      include: { service: true, createdBy: true },
+      include: { service: true, product: true, createdBy: true },
       orderBy: { servedAt: "desc" },
       take: 100,
     }),
@@ -65,7 +66,7 @@ export default async function ServicesPage({
       select: { amount: true, paymentMethod: true },
     }),
     prisma.serviceSale.findMany({
-      include: { service: true, createdBy: true },
+      include: { service: true, product: true, createdBy: true },
       orderBy: { servedAt: "desc" },
     }),
     prisma.product.findMany({
@@ -149,13 +150,20 @@ export default async function ServicesPage({
 
       <div className="detail-layout">
         <section className="panel">
-          <h2>Record a service</h2>
+          <h2>Record a service or material</h2>
           <ServiceSaleForm
             recorderName={recorderName}
             services={activeServices.map((service) => ({
               id: service.id,
               name: service.name,
               defaultCost: service.defaultCost,
+            }))}
+            products={products.map((product) => ({
+              id: product.id,
+              name: product.name,
+              quantity: product.quantity,
+              unitPrice: product.unitPrice,
+              categoryName: product.category?.name || null,
             }))}
           />
         </section>
@@ -290,7 +298,12 @@ export default async function ServicesPage({
                   <tr key={sale.id}>
                     <td>{formatDate(sale.servedAt)}</td>
                     <td>
-                      {sale.service.name}
+                      {saleLineLabel(sale)}
+                      {sale.product ? (
+                        <div className="muted" style={{ fontSize: "0.85rem" }}>
+                          Material · stock deducted
+                        </div>
+                      ) : null}
                       {sale.note ? (
                         <div className="muted" style={{ fontSize: "0.85rem" }}>
                           {sale.note}
@@ -345,7 +358,7 @@ export default async function ServicesPage({
                     <tr key={sale.id}>
                       <td>{sale.momoName || "—"}</td>
                       <td>{sale.clientName || "—"}</td>
-                      <td>{sale.service.name}</td>
+                      <td>{saleLineLabel(sale)}</td>
                       <td>{formatCurrency(sale.cost)}</td>
                       <td>{sale.createdBy?.name || "—"}</td>
                       <td>{formatDate(sale.servedAt)}</td>
@@ -381,7 +394,7 @@ export default async function ServicesPage({
                   {cashClients.map((sale) => (
                     <tr key={sale.id}>
                       <td>{sale.clientName || "Walk-in"}</td>
-                      <td>{sale.service.name}</td>
+                      <td>{saleLineLabel(sale)}</td>
                       <td>{formatCurrency(sale.cost)}</td>
                       <td>{sale.createdBy?.name || "—"}</td>
                       <td>{formatDate(sale.servedAt)}</td>

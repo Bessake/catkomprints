@@ -1,5 +1,6 @@
 import { MovementType, PaymentMethod } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { saleLineLabel } from "@/lib/utils";
 
 export type DaySnapshot = {
   reportDate: Date;
@@ -31,6 +32,7 @@ export type DayActivityService = {
   payment: "momo" | "cash";
   recordedBy: string;
   note: string;
+  kind?: "service" | "material";
 };
 
 export type DayActivityCashOut = {
@@ -246,7 +248,7 @@ export async function buildDayActivity(now = new Date()): Promise<DayActivity> {
   const [sales, cashOuts, stockOuts, stockIns, debtors] = await Promise.all([
     prisma.serviceSale.findMany({
       where: { servedAt: range },
-      include: { service: true, createdBy: true },
+      include: { service: true, product: true, createdBy: true },
       orderBy: { servedAt: "asc" },
     }),
     prisma.cashOut.findMany({
@@ -274,13 +276,14 @@ export async function buildDayActivity(now = new Date()): Promise<DayActivity> {
   return {
     services: sales.map((sale) => ({
       at: sale.servedAt.toISOString(),
-      service: sale.service.name,
+      service: saleLineLabel(sale),
       client: sale.clientName,
       momoName: sale.momoName,
       cost: sale.cost,
       payment: sale.paymentMethod,
       recordedBy: sale.createdBy?.name || "",
       note: sale.note,
+      kind: sale.productId ? "material" : "service",
     })),
     cashOuts: cashOuts.map((entry) => ({
       at: entry.takenAt.toISOString(),

@@ -47,6 +47,17 @@ export const paymentMethodLabels = {
   cash: "Cash",
 } as const;
 
+export function saleLineLabel(sale: {
+  service?: { name: string } | null;
+  product?: { name: string } | null;
+  quantity?: number | null;
+}) {
+  if (sale.product) {
+    return `${sale.product.name} × ${sale.quantity ?? 1}`;
+  }
+  return sale.service?.name || "Sale";
+}
+
 export function isLowStock(quantity: number, reorderLevel: number) {
   return quantity <= reorderLevel;
 }

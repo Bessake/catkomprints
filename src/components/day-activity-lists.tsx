@@ -90,6 +90,11 @@ export function DayActivityLists({ activity }: { activity: DayActivity }) {
                     <td>{formatDate(sale.at)}</td>
                     <td>
                       {sale.service}
+                      {sale.kind === "material" ? (
+                        <div className="muted" style={{ fontSize: "0.85rem" }}>
+                          Material · stock deducted
+                        </div>
+                      ) : null}
                       {sale.note ? (
                         <div className="muted" style={{ fontSize: "0.85rem" }}>
                           {sale.note}
