@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { signOut } from "@/lib/auth";
 import { BrandLogo } from "@/components/brand-logo";
+import { DeveloperCredit } from "@/components/developer-credit";
 
 const adminLinks = [
   { href: "/", label: "Dashboard" },
@@ -59,6 +60,7 @@ export function AppNav({
             Sign out
           </button>
         </form>
+        <DeveloperCredit variant="nav" />
       </div>
     </aside>
   );

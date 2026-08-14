@@ -299,6 +299,28 @@ a.brand-lockup,
   gap: 0.35rem;
 }
 
+.developer-credit {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  text-align: center;
+}
+
+.developer-credit.nav {
+  text-align: left;
+  padding: 0.35rem 0.7rem 0;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.developer-credit strong {
+  font-weight: 600;
+  color: inherit;
+}
+
+.developer-credit.nav strong {
+  color: rgba(255, 255, 255, 0.82);
+}
+
 .link-button {
   background: none;
   border: 0;
@@ -645,6 +667,10 @@ a.brand-lockup,
   width: min(980px, calc(100% - 2rem));
   margin: 0 auto;
   padding: 1.5rem 0 3rem;
+}
+
+.operator-footer {
+  padding: 0 1rem 1.25rem;
 }
 
 .operator-panel {

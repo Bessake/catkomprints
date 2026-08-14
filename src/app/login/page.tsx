@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { BrandLogo } from "@/components/brand-logo";
+import { DeveloperCredit } from "@/components/developer-credit";
 import { LoginForm } from "@/components/login-form";
 
 export const metadata = {
@@ -25,6 +26,7 @@ export default function LoginPage() {
             <Link href="/operator/login">Stock out terminal login →</Link>
           </p>
         </div>
+        <DeveloperCredit />
       </div>
     </div>
   );

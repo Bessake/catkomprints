@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { BrandLogo } from "@/components/brand-logo";
+import { DeveloperCredit } from "@/components/developer-credit";
 import { OperatorLoginForm } from "@/components/operator-login-form";
 
 export const metadata = {
@@ -29,6 +30,7 @@ export default function OperatorLoginPage() {
             <Link href="/login">Admin / office login →</Link>
           </p>
         </div>
+        <DeveloperCredit />
       </div>
     </div>
   );

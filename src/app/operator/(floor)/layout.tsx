@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth, signOut } from "@/lib/auth";
 import { BrandLogo } from "@/components/brand-logo";
+import { DeveloperCredit } from "@/components/developer-credit";
 
 export default async function OperatorFloorLayout({
   children,
@@ -61,6 +62,9 @@ export default async function OperatorFloorLayout({
         </div>
       </header>
       <main className="operator-main">{children}</main>
+      <footer className="operator-footer">
+        <DeveloperCredit />
+      </footer>
     </div>
   );
 }
