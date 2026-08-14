@@ -1,14 +1,16 @@
 import { DeskProductForm } from "@/components/desk-product-form";
 import { DeskStockInForm } from "@/components/desk-stock-in-form";
+import { DeskStockInHistory } from "@/components/desk-stock-in-history";
 import { OperatorStockOutForm } from "@/components/operator-stock-out-form";
 import { ensureDefaultFloorStaff } from "@/lib/ensure-print-materials";
 import { prisma } from "@/lib/prisma";
+import { MovementType } from "@prisma/client";
 
 export const metadata = { title: "Stock" };
 
 export default async function FrontDeskStockOutPage() {
   await ensureDefaultFloorStaff();
-  const [products, staff, categories] = await Promise.all([
+  const [products, staff, categories, stockIns] = await Promise.all([
     prisma.product.findMany({
       where: { active: true },
       include: { category: true },
@@ -19,6 +21,12 @@ export default async function FrontDeskStockOutPage() {
       orderBy: { name: "asc" },
     }),
     prisma.category.findMany({ orderBy: { name: "asc" } }),
+    prisma.stockMovement.findMany({
+      where: { type: MovementType.in },
+      include: { product: true, createdBy: true },
+      orderBy: { createdAt: "desc" },
+      take: 50,
+    }),
   ]);
 
   const productOptions = products.map((product) => ({
@@ -73,6 +81,27 @@ export default async function FrontDeskStockOutPage() {
           )}
         </section>
       </div>
+
+      <section className="panel" style={{ marginTop: "1.25rem" }}>
+        <h2>Stock in records</h2>
+        <p className="muted" style={{ marginTop: 0 }}>
+          Edit a record if the product, quantity, or note was entered wrongly.
+          On-hand stock is corrected automatically.
+        </p>
+        <DeskStockInHistory
+          products={productOptions}
+          records={stockIns.map((row) => ({
+            id: row.id,
+            productId: row.productId,
+            productName: row.product.name,
+            sku: row.product.sku,
+            quantity: row.quantity,
+            note: row.note,
+            recordedBy: row.createdBy?.name || "",
+            createdAt: row.createdAt.toISOString(),
+          }))}
+        />
+      </section>
 
       <section className="panel" style={{ marginTop: "1.25rem" }}>
         <h2>Add product</h2>

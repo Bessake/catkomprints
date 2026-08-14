@@ -263,6 +263,118 @@ export async function recordDeskStockInAction(
   };
 }
 
+const updateDeskStockInSchema = z.object({
+  productId: z.string().min(1),
+  quantity: z.coerce.number().int().positive(),
+  note: z.string().trim().max(500).optional().default(""),
+});
+
+export async function updateDeskStockInAction(
+  movementId: string,
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  await requireSession();
+
+  const parsed = updateDeskStockInSchema.safeParse({
+    productId: formData.get("productId"),
+    quantity: formData.get("quantity"),
+    note: formData.get("note") || "",
+  });
+
+  if (!parsed.success) {
+    return { error: "Select a product and a quantity of 1 or more." };
+  }
+
+  try {
+    const updatedName = await prisma.$transaction(async (tx) => {
+      const movement = await tx.stockMovement.findUnique({
+        where: { id: movementId },
+        include: { product: true },
+      });
+      if (!movement || movement.type !== MovementType.in) {
+        throw new Error("NOT_FOUND");
+      }
+
+      const nextProduct = await tx.product.findUnique({
+        where: { id: parsed.data.productId },
+      });
+      if (
+        !nextProduct ||
+        (!nextProduct.active && nextProduct.id !== movement.productId)
+      ) {
+        throw new Error("PRODUCT");
+      }
+
+      const note = parsed.data.note;
+      const sameProduct = movement.productId === nextProduct.id;
+
+      if (sameProduct) {
+        const nextQty =
+          movement.product.quantity - movement.quantity + parsed.data.quantity;
+        if (nextQty < 0) {
+          throw new Error("USED");
+        }
+        await tx.product.update({
+          where: { id: nextProduct.id },
+          data: { quantity: nextQty },
+        });
+      } else {
+        const oldQty = movement.product.quantity - movement.quantity;
+        if (oldQty < 0) {
+          throw new Error("USED");
+        }
+        await tx.product.update({
+          where: { id: movement.productId },
+          data: { quantity: oldQty },
+        });
+        await tx.product.update({
+          where: { id: nextProduct.id },
+          data: { quantity: nextProduct.quantity + parsed.data.quantity },
+        });
+      }
+
+      await tx.stockMovement.update({
+        where: { id: movement.id },
+        data: {
+          productId: nextProduct.id,
+          quantity: parsed.data.quantity,
+          note,
+        },
+      });
+
+      return nextProduct.name;
+    });
+
+    revalidatePath("/");
+    revalidatePath("/products");
+    revalidatePath("/movements");
+    revalidatePath("/stock-out");
+    revalidatePath("/services");
+    revalidatePath("/operator");
+    revalidatePath("/daily-report");
+    return {
+      success: `Updated stock in to ${parsed.data.quantity} × ${updatedName}.`,
+    };
+  } catch (error) {
+    if (error instanceof Error && error.message === "NOT_FOUND") {
+      return { error: "That stock-in record was not found." };
+    }
+    if (error instanceof Error && error.message === "PRODUCT") {
+      return {
+        error: "That product is not available. Pick another from the list.",
+      };
+    }
+    if (error instanceof Error && error.message === "USED") {
+      return {
+        error:
+          "Cannot edit this stock in because some of that stock has already been used.",
+      };
+    }
+    throw error;
+  }
+}
+
 export async function updateProductAction(
   productId: string,
   _prev: ActionState,

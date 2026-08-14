@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { PaymentMethod } from "@prisma/client";
+import { PaymentMethod, MovementType } from "@prisma/client";
 import { DebtorForm } from "@/components/debtor-form";
 import { DebtorTable } from "@/components/debtor-table";
 import { DeskStockInForm } from "@/components/desk-stock-in-form";
+import { DeskStockInHistory } from "@/components/desk-stock-in-history";
 import { PressServiceForm } from "@/components/press-service-form";
 import { ServiceListDropdown } from "@/components/service-list-dropdown";
 import { ServiceSaleForm } from "@/components/service-sale-form";
@@ -43,7 +44,7 @@ export default async function ServicesPage({
   const { start, end } = getAccraDayBounds();
   const todayRange = { gte: start, lte: end };
 
-  const [catalog, sales, todaySales, todayCashOuts, allSales, products, unpaidDebtors] =
+  const [catalog, sales, todaySales, todayCashOuts, allSales, products, unpaidDebtors, stockIns] =
     await Promise.all([
     prisma.pressService.findMany({
       include: { _count: { select: { sales: true } } },
@@ -76,6 +77,12 @@ export default async function ServicesPage({
       where: { paid: false },
       include: { createdBy: true },
       orderBy: { recordedAt: "desc" },
+    }),
+    prisma.stockMovement.findMany({
+      where: { type: MovementType.in },
+      include: { product: true, createdBy: true },
+      orderBy: { createdAt: "desc" },
+      take: 50,
     }),
   ]);
 
@@ -205,6 +212,32 @@ export default async function ServicesPage({
           <DebtorForm recorderName={recorderName} />
         </section>
       </div>
+
+      <section className="panel" style={{ marginTop: "1.25rem" }}>
+        <h2>Stock in records</h2>
+        <p className="muted" style={{ marginTop: 0 }}>
+          Edit a record if the product, quantity, or note was entered wrongly.
+        </p>
+        <DeskStockInHistory
+          products={products.map((product) => ({
+            id: product.id,
+            sku: product.sku,
+            name: product.name,
+            quantity: product.quantity,
+            categoryName: product.category?.name || null,
+          }))}
+          records={stockIns.map((row) => ({
+            id: row.id,
+            productId: row.productId,
+            productName: row.product.name,
+            sku: row.product.sku,
+            quantity: row.quantity,
+            note: row.note,
+            recordedBy: row.createdBy?.name || "",
+            createdAt: row.createdAt.toISOString(),
+          }))}
+        />
+      </section>
 
       <section className="panel" style={{ marginTop: "1.25rem" }}>
         <h2>People who still owe</h2>
