@@ -1,12 +1,13 @@
 import { InvoiceStatus } from "@prisma/client";
 import { BroadcastForm, PaymentReminderForm } from "@/components/sms-forms";
+import { isLiveSmsConfigured } from "@/lib/sms";
 import { prisma } from "@/lib/prisma";
 import { formatDate } from "@/lib/utils";
 
 export const metadata = { title: "Messages" };
 
 export default async function MessagesPage() {
-  const [unpaidInvoices, recentMessages, twilioReady] = await Promise.all([
+  const [unpaidInvoices, recentMessages, smsReady] = await Promise.all([
     prisma.invoice.findMany({
       where: {
         status: { in: [InvoiceStatus.sent, InvoiceStatus.overdue] },
@@ -20,13 +21,7 @@ export default async function MessagesPage() {
       orderBy: { createdAt: "desc" },
       include: { client: true, invoice: true },
     }),
-    Promise.resolve(
-      Boolean(
-        process.env.TWILIO_ACCOUNT_SID &&
-          process.env.TWILIO_AUTH_TOKEN &&
-          process.env.TWILIO_FROM_NUMBER,
-      ),
-    ),
+    Promise.resolve(isLiveSmsConfigured()),
   ]);
 
   return (
@@ -39,9 +34,9 @@ export default async function MessagesPage() {
       </div>
 
       <div className="success-banner" style={{ marginBottom: "1.25rem" }}>
-        {twilioReady
-          ? "Twilio is configured — SMS will send live."
-          : "SMS is in demo mode (messages are logged, not delivered). Add TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_FROM_NUMBER to .env for live SMS."}
+        {smsReady
+          ? "Nkomo SMS is configured — messages will send live."
+          : "SMS is in demo mode (messages are logged, not delivered). Add NKOMO_SMS_API_TOKEN and NKOMO_SMS_SENDER_ID to send live via Nkomo SMS."}
       </div>
 
       <div className="detail-layout">

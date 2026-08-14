@@ -424,7 +424,7 @@ export async function sendClientSmsAction(
   return {
     success:
       result.status === "simulated"
-        ? "SMS simulated (configure Twilio for live delivery)."
+        ? "SMS simulated (add Nkomo SMS API token and sender ID for live delivery)."
         : "SMS sent.",
   };
 }
