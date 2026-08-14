@@ -83,6 +83,8 @@ export function ServiceSaleForm({
         Service
         <select
           name="serviceId"
+          className="dropdown-select"
+          size={1}
           required
           value={serviceId}
           onChange={(event) => {

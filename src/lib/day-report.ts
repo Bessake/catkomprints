@@ -52,11 +52,23 @@ export type DayActivityStock = {
   note: string;
 };
 
+export type DayActivityDebtor = {
+  at: string;
+  name: string;
+  phone: string;
+  amount: number;
+  purpose: string;
+  note: string;
+  paid: boolean;
+  recordedBy: string;
+};
+
 export type DayActivity = {
   services: DayActivityService[];
   cashOuts: DayActivityCashOut[];
   stockOuts: DayActivityStock[];
   stockIns: DayActivityStock[];
+  debtors: DayActivityDebtor[];
 };
 
 function accraDateParts(now = new Date()) {
@@ -231,7 +243,7 @@ export async function buildDayActivity(now = new Date()): Promise<DayActivity> {
   const { start, end } = getAccraDayBounds(now);
   const range = { gte: start, lte: end };
 
-  const [sales, cashOuts, stockOuts, stockIns] = await Promise.all([
+  const [sales, cashOuts, stockOuts, stockIns, debtors] = await Promise.all([
     prisma.serviceSale.findMany({
       where: { servedAt: range },
       include: { service: true, createdBy: true },
@@ -251,6 +263,11 @@ export async function buildDayActivity(now = new Date()): Promise<DayActivity> {
       where: { createdAt: range, type: MovementType.in },
       include: { product: true, takenBy: true, createdBy: true },
       orderBy: { createdAt: "asc" },
+    }),
+    prisma.debtor.findMany({
+      where: { recordedAt: range },
+      include: { createdBy: true },
+      orderBy: { recordedAt: "asc" },
     }),
   ]);
 
@@ -275,6 +292,16 @@ export async function buildDayActivity(now = new Date()): Promise<DayActivity> {
     })),
     stockOuts: stockOuts.map(mapStockRow),
     stockIns: stockIns.map(mapStockRow),
+    debtors: debtors.map((row) => ({
+      at: row.recordedAt.toISOString(),
+      name: row.name,
+      phone: row.phone,
+      amount: row.amount,
+      purpose: row.purpose,
+      note: row.note,
+      paid: row.paid,
+      recordedBy: row.createdBy?.name || "",
+    })),
   };
 }
 
@@ -289,5 +316,10 @@ export function parseDayActivity(value: unknown): DayActivity | null {
   ) {
     return null;
   }
-  return value as DayActivity;
+  return {
+    ...(value as DayActivity),
+    debtors: Array.isArray(record.debtors)
+      ? (record.debtors as DayActivity["debtors"])
+      : [],
+  };
 }

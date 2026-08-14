@@ -1,6 +1,5 @@
 import { PrismaClient, Role } from "@prisma/client";
 import bcrypt from "bcryptjs";
-import { DEFAULT_PRESS_SERVICES } from "../src/lib/press-services";
 import { emailFromFullName } from "../src/lib/user-email";
 
 const prisma = new PrismaClient();
@@ -26,15 +25,12 @@ async function main() {
   await prisma.stockMovement.deleteMany();
   await prisma.serviceSale.deleteMany();
   await prisma.cashOut.deleteMany();
+  await prisma.debtor.deleteMany();
   await prisma.dailyReport.deleteMany();
   await prisma.product.deleteMany();
   await prisma.category.deleteMany();
   await prisma.floorStaff.deleteMany();
   await prisma.pressService.deleteMany();
-
-  await prisma.pressService.createMany({
-    data: DEFAULT_PRESS_SERVICES.map((name) => ({ name })),
-  });
 
   const passwordHash = await bcrypt.hash("password123", 10);
 
@@ -69,6 +65,7 @@ async function main() {
     serviceSales: await prisma.serviceSale.count(),
     cashOuts: await prisma.cashOut.count(),
     dailyReports: await prisma.dailyReport.count(),
+    debtors: await prisma.debtor.count(),
     pressServices: await prisma.pressService.count(),
     users: await prisma.user.count(),
   };

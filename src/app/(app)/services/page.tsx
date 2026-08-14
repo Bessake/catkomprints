@@ -1,6 +1,10 @@
+import Link from "next/link";
 import { PaymentMethod } from "@prisma/client";
-import { togglePressServiceAction } from "@/app/service-actions";
+import { DebtorForm } from "@/components/debtor-form";
+import { DebtorTable } from "@/components/debtor-table";
+import { DeskStockInForm } from "@/components/desk-stock-in-form";
 import { PressServiceForm } from "@/components/press-service-form";
+import { ServiceListDropdown } from "@/components/service-list-dropdown";
 import { ServiceSaleForm } from "@/components/service-sale-form";
 import { auth } from "@/lib/auth";
 import { DEFAULT_PRESS_SERVICES } from "@/lib/press-services";
@@ -39,7 +43,8 @@ export default async function ServicesPage({
   const { start, end } = getAccraDayBounds();
   const todayRange = { gte: start, lte: end };
 
-  const [catalog, sales, todaySales, todayCashOuts, allSales] = await Promise.all([
+  const [catalog, sales, todaySales, todayCashOuts, allSales, products, unpaidDebtors] =
+    await Promise.all([
     prisma.pressService.findMany({
       include: { _count: { select: { sales: true } } },
       orderBy: { name: "asc" },
@@ -61,6 +66,16 @@ export default async function ServicesPage({
     prisma.serviceSale.findMany({
       include: { service: true, createdBy: true },
       orderBy: { servedAt: "desc" },
+    }),
+    prisma.product.findMany({
+      where: { active: true },
+      include: { category: true },
+      orderBy: [{ category: { name: "asc" } }, { name: "asc" }],
+    }),
+    prisma.debtor.findMany({
+      where: { paid: false },
+      include: { createdBy: true },
+      orderBy: { recordedAt: "desc" },
     }),
   ]);
 
@@ -92,8 +107,7 @@ export default async function ServicesPage({
           <p className="eyebrow">Front desk</p>
           <h1>Services</h1>
           <p className="muted" style={{ margin: "0.4rem 0 0" }}>
-            Record each job, the cost in cedis, and whether the client paid
-            MoMo or cash.
+            Record each job, stock coming in, and customers who still owe.
           </p>
         </div>
       </div>
@@ -142,56 +156,67 @@ export default async function ServicesPage({
         <section className="panel">
           <h2>Service list</h2>
           <p className="muted" style={{ marginTop: 0 }}>
-            These names appear in the dropdown. Add any extra press jobs you
+            Open the menu to pick a service. Add any extra press jobs you
             offer.
           </p>
-          {catalog.length === 0 ? (
-            <p className="muted">No services yet.</p>
-          ) : (
-            <div className="admin-table-wrap">
-              <table className="admin-table">
-                <thead>
-                  <tr>
-                    <th>Service</th>
-                    <th>Jobs</th>
-                    <th />
-                  </tr>
-                </thead>
-                <tbody>
-                  {catalog.map((service) => {
-                    const toggle = togglePressServiceAction.bind(
-                      null,
-                      service.id,
-                    );
-                    return (
-                      <tr key={service.id}>
-                        <td>
-                          {service.name}
-                          {!service.active ? (
-                            <div className="muted" style={{ fontSize: "0.85rem" }}>
-                              Hidden from dropdown
-                            </div>
-                          ) : null}
-                        </td>
-                        <td>{service._count.sales}</td>
-                        <td>
-                          <form action={toggle}>
-                            <button type="submit" className="button secondary">
-                              {service.active ? "Hide" : "Show"}
-                            </button>
-                          </form>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
+          <ServiceListDropdown
+            services={catalog.map((service) => ({
+              id: service.id,
+              name: service.name,
+              active: service.active,
+              jobs: service._count.sales,
+            }))}
+          />
           <h2 style={{ marginTop: "1.5rem" }}>Add service</h2>
           <PressServiceForm />
         </section>
       </div>
+
+      <div className="detail-layout" style={{ marginTop: "1.25rem" }}>
+        <section className="panel">
+          <h2>Record stock in</h2>
+          <p className="muted" style={{ marginTop: 0 }}>
+            Add materials as they arrive so on-hand quantities stay up to date.
+          </p>
+          {products.length === 0 ? (
+            <p className="muted">
+              No products yet. Add one on the Stock page, then record stock in
+              here.
+            </p>
+          ) : (
+            <DeskStockInForm
+              products={products.map((product) => ({
+                id: product.id,
+                sku: product.sku,
+                name: product.name,
+                quantity: product.quantity,
+                reorderLevel: product.reorderLevel,
+                categoryName: product.category?.name || null,
+              }))}
+            />
+          )}
+        </section>
+
+        <section className="panel">
+          <h2>Record a debtor</h2>
+          <p className="muted" style={{ marginTop: 0 }}>
+            Use this when a customer takes work and will pay later.
+          </p>
+          <DebtorForm recorderName={recorderName} />
+        </section>
+      </div>
+
+      <section className="panel" style={{ marginTop: "1.25rem" }}>
+        <h2>People who still owe</h2>
+        <p className="muted" style={{ marginTop: 0 }}>
+          See settled names on the{" "}
+          <Link href="/debtors">Debtors</Link> page.
+        </p>
+        <DebtorTable
+          debtors={unpaidDebtors}
+          emptyText="No outstanding debtors."
+        />
+      </section>
 
       <div className="filters">
         <form method="get">

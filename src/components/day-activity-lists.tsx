@@ -154,6 +154,53 @@ export function DayActivityLists({ activity }: { activity: DayActivity }) {
           </div>
         )}
       </section>
+
+      <section className="panel" style={{ marginTop: "1.25rem" }}>
+        <h2>Debtors</h2>
+        {(activity.debtors ?? []).length === 0 ? (
+          <p className="muted">No debtors were recorded.</p>
+        ) : (
+          <div className="admin-table-wrap">
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th>Date & time</th>
+                  <th>Name</th>
+                  <th>Phone</th>
+                  <th>Amount</th>
+                  <th>For</th>
+                  <th>Status</th>
+                  <th>Recorded by</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(activity.debtors ?? []).map((row, index) => (
+                  <tr key={`${row.at}-${row.name}-${index}`}>
+                    <td>{formatDate(row.at)}</td>
+                    <td>
+                      {row.name}
+                      {row.note ? (
+                        <div className="muted" style={{ fontSize: "0.85rem" }}>
+                          {row.note}
+                        </div>
+                      ) : null}
+                    </td>
+                    <td>{row.phone || "—"}</td>
+                    <td>{formatCurrency(row.amount)}</td>
+                    <td>{row.purpose}</td>
+                    <td>
+                      <span className={`badge ${row.paid ? "paid" : "overdue"}`}>
+                        {row.paid ? "Paid" : "Owes"}
+                      </span>
+                    </td>
+                    <td>{row.recordedBy || "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
     </>
   );
 }

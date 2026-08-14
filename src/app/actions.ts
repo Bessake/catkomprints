@@ -255,6 +255,7 @@ export async function recordDeskStockInAction(
   revalidatePath(`/products/${product.id}`);
   revalidatePath("/movements");
   revalidatePath("/stock-out");
+  revalidatePath("/services");
   revalidatePath("/operator");
   revalidatePath("/daily-report");
   return {

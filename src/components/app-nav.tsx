@@ -8,6 +8,7 @@ const adminLinks = [
   { href: "/reports", label: "Daily reports" },
   { href: "/products", label: "Products" },
   { href: "/invoices", label: "Invoices" },
+  { href: "/debtors", label: "Debtors" },
   { href: "/movements", label: "Movements" },
   { href: "/staff", label: "Staff members" },
   { href: "/users", label: "Front desk logins" },
@@ -17,6 +18,7 @@ const adminLinks = [
 const staffLinks = [
   { href: "/services", label: "Services" },
   { href: "/stock-out", label: "Stock" },
+  { href: "/debtors", label: "Debtors" },
   { href: "/cash-out", label: "Cash out" },
   { href: "/clients", label: "Clients" },
   { href: "/messages", label: "Messages" },
